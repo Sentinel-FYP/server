@@ -17,16 +17,25 @@ router.post("/api/signup", async (req, res) => {
 
     let user = await User.findOne({ email: req.body.email });
     if (user) return res.status(403).json({ message: "User already Exists" });
-    if (receivedUser.password !== receivedUser.confirmPassword) return res.status(403).json({ message: "Password do not match" });
+    if (receivedUser.password !== receivedUser.confirmPassword)
+      return res.status(403).json({ message: "Password do not match" });
 
     const salt = await bcrypt.genSalt(parseInt(process.env.SALT_FACTOR));
 
     receivedUser.password = await bcrypt.hash(password, salt);
 
     user = await User.create(receivedUser);
-    const token = jwt.sign({ email: user.email, id: user._id }, process.env.SECRET_KEY, { expiresIn: "24h" });
+    const token = jwt.sign(
+      { email: user.email, id: user._id },
+      process.env.SECRET_KEY,
+      { expiresIn: "24h" }
+    );
 
-    const userData = { email: user.email, firstName: user.firstName, lastName: user.lastName };
+    const userData = {
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    };
 
     res.status(200).json({ user: userData, token });
   } catch (error) {
@@ -42,13 +51,24 @@ router.post("/api/login", async (req, res) => {
     if (!user) return res.status(404).json({ message: "User does not exist" });
 
     let isPasswordCorrect = await bcrypt.compare(password, user.password);
-    if (!isPasswordCorrect) return res.status(401).json({ message: "Invalid Credentials" });
+    if (!isPasswordCorrect)
+      return res.status(401).json({ message: "Invalid Credentials" });
 
-    const isAdmin = user.roles.filter((role) => role === "admin").length === 1 ? true : false;
+    const isAdmin =
+      user.roles.filter((role) => role === "admin").length === 1 ? true : false;
 
-    const token = jwt.sign({ email: user.email, id: user._id, isAdmin }, process.env.SECRET_KEY, { expiresIn: "24h" });
+    const token = jwt.sign(
+      { email: user.email, id: user._id, isAdmin },
+      process.env.SECRET_KEY,
+      { expiresIn: "24h" }
+    );
 
-    const userData = { email: user.email, firstName: user.firstName, lastName: user.lastName, isAdmin };
+    const userData = {
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      isAdmin,
+    };
 
     res.status(200).json({ user: userData, token });
   } catch (error) {
