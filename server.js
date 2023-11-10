@@ -9,6 +9,8 @@ app.use("/", require("./routes/api/userAuth"));
 
 app.use(require("./middlewares/auth"));
 
+app.use("/", require("./routes/api/edgeDevice"));
+
 app.use((req, res, next) => {
   res.status(404).send("Not Found");
 });
