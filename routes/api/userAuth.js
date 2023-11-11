@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 
 const User = require("../../models/User");
+const EdgeDevice = require("../../models/EdgeDevice");
 
 dotenv.config();
 
@@ -76,4 +77,28 @@ router.post("/api/login", async (req, res) => {
   }
 });
 
+router.post("/api/deviceAuth", async (req, res) => {
+  try {
+    let deviceID = req.body.deviceID;
+    const edgeDevice = EdgeDevice.find({ deviceID: deviceID }).populate(
+      "owner"
+    );
+    if (!edgeDevice)
+      return res.status(404).json({ message: "Device does not exist" });
+    if (!edgeDevice.owner)
+      return res.status(403).json({ message: "Device not registered" });
+
+    const isAdmin = false;
+
+    const token = jwt.sign(
+      { email: edgeDevice.owner.email, id: edgeDevice.owner._id, isAdmin },
+      process.env.SECRET_KEY,
+      { expiresIn: "24h" }
+    );
+
+    res.status(200).json({ edgeDevice: edgeDevice, token });
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong", error });
+  }
+});
 module.exports = router;
