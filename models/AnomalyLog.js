@@ -11,3 +11,6 @@ let modelSchema = mongoose.Schema(
   },
   { timestamps: true }
 );
+
+let Model = mongoose.model("AnomalyLog", modelSchema);
+module.exports = Model;

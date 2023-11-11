@@ -7,9 +7,10 @@ app.use(express.static("public"));
 
 app.use("/", require("./routes/api/userAuth"));
 
-app.use(require("./middlewares/auth"));
+const auth = require("./middlewares/auth");
 
-app.use("/", require("./routes/api/edgeDevice"));
+app.use("/", auth, require("./routes/api/edgeDevice"));
+app.use("/", auth, require("./routes/api/anomalyLog"));
 
 app.use((req, res, next) => {
   res.status(404).send("Not Found");

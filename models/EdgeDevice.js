@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 let modelSchema = mongoose.Schema({
-  deviceID: String,
+  deviceID: { type: String, unique: true, required: true },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

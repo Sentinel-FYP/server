@@ -80,9 +80,9 @@ router.post("/api/login", async (req, res) => {
 router.post("/api/deviceAuth", async (req, res) => {
   try {
     let deviceID = req.body.deviceID;
-    const edgeDevice = EdgeDevice.find({ deviceID: deviceID }).populate(
-      "owner"
-    );
+    const edgeDevice = await EdgeDevice.findOne({
+      deviceID: deviceID,
+    }).populate("owner");
     if (!edgeDevice)
       return res.status(404).json({ message: "Device does not exist" });
     if (!edgeDevice.owner)
