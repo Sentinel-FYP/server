@@ -25,11 +25,7 @@ router.get("/api/anomalyLog", async (req, res) => {
 
 router.post("/api/anomalyLog", async (req, res) => {
   try {
-    const anomalyLog = await AnomalyLog.create({
-      occurredAt: req.body.occurredAt,
-      endedAt: req.body.endedAt,
-      fromDevice: req.body.fromDevice,
-    });
+    const anomalyLog = await AnomalyLog.create(req.body);
     res.status(200).json(anomalyLog);
   } catch (error) {
     console.log(error);

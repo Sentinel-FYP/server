@@ -8,6 +8,7 @@ let modelSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "EdgeDevice",
     },
+    clipFileName: String,
   },
   { timestamps: true }
 );
