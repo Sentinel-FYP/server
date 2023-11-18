@@ -4,7 +4,9 @@ let app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
-
+app.use(
+  require("morgan")(process.env.NODE_ENV === "production" ? "combined" : "dev")
+);
 app.use("/", require("./routes/api/userAuth"));
 
 const auth = require("./middlewares/auth");
