@@ -5,7 +5,8 @@ dotenv.config();
 
 const auth = async (req, res, next) => {
   try {
-    if (!req.headers.authorization) return res.status(400).send({ message: "Provide an auth token" });
+    if (!req.headers.authorization)
+      return res.status(400).send({ message: "Provide an auth token" });
 
     const token = req.headers.authorization.split(" ")[1];
 
@@ -14,6 +15,7 @@ const auth = async (req, res, next) => {
 
     next();
   } catch (error) {
+    console.log("Auth Error", error);
     res.status(500).send({ message: "Something went wrong" });
   }
 };

@@ -14,7 +14,11 @@ router.post("/api/signup", async (req, res) => {
   try {
     const { password } = req.body;
     let receivedUser = req.body;
-    receivedUser.roles = ["user"];
+    receivedUser.roles = ["USER"];
+
+    if (password && password.length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters long" });
+    }
 
     let user = await User.findOne({ email: req.body.email });
     if (user) return res.status(403).json({ message: "User already Exists" });
@@ -25,12 +29,12 @@ router.post("/api/signup", async (req, res) => {
 
     receivedUser.password = await bcrypt.hash(password, salt);
 
+    const isAdmin = false;
+
     user = await User.create(receivedUser);
-    const token = jwt.sign(
-      { email: user.email, id: user._id },
-      process.env.SECRET_KEY,
-      { expiresIn: "24h" }
-    );
+    const token = jwt.sign({ email: user.email, id: user._id, isAdmin }, process.env.SECRET_KEY, {
+      expiresIn: "24h",
+    });
 
     const userData = {
       email: user.email,
@@ -48,21 +52,22 @@ router.post("/api/signup", async (req, res) => {
 router.post("/api/login", async (req, res) => {
   try {
     let { email, password } = req.body;
+
+    if (password && password.length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters long" });
+    }
+
     let user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User does not exist" });
 
     let isPasswordCorrect = await bcrypt.compare(password, user.password);
-    if (!isPasswordCorrect)
-      return res.status(401).json({ message: "Invalid Credentials" });
+    if (!isPasswordCorrect) return res.status(401).json({ message: "Invalid Credentials" });
 
-    const isAdmin =
-      user.roles.filter((role) => role === "admin").length === 1 ? true : false;
+    const isAdmin = user.roles.filter((role) => role === "ADMIN").length === 1 ? true : false;
 
-    const token = jwt.sign(
-      { email: user.email, id: user._id, isAdmin },
-      process.env.SECRET_KEY,
-      { expiresIn: "24h" }
-    );
+    const token = jwt.sign({ email: user.email, id: user._id, isAdmin }, process.env.SECRET_KEY, {
+      expiresIn: "24h",
+    });
 
     const userData = {
       email: user.email,
@@ -83,10 +88,9 @@ router.post("/api/deviceAuth", async (req, res) => {
     const edgeDevice = await EdgeDevice.findOne({
       deviceID: deviceID,
     }).populate("owner");
-    if (!edgeDevice)
-      return res.status(404).json({ message: "Device does not exist" });
-    if (!edgeDevice.owner)
-      return res.status(403).json({ message: "Device not registered" });
+
+    if (!edgeDevice) return res.status(404).json({ message: "Device does not exist" });
+    if (!edgeDevice.owner) return res.status(403).json({ message: "Device not registered" });
 
     const isAdmin = false;
 

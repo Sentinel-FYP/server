@@ -9,6 +9,7 @@ let modelSchema = mongoose.Schema(
       ref: "EdgeDevice",
     },
     clipFileName: String,
+    thumbnail: String,
   },
   { timestamps: true }
 );
