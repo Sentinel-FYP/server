@@ -1,6 +1,12 @@
 const express = require("express");
 let app = express();
 
+const httpServer = require("http").createServer(app);
+
+const io = require("socket.io")(httpServer, { cors: true });
+io.use(require("./middlewares/socketAuth"));
+require("./events")(io);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
@@ -27,6 +33,6 @@ mongoose
   .then(() => console.log("Connected to Mongo ...."))
   .catch((error) => console.log(error.message));
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log("Server Started on port", PORT);
 });
