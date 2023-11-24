@@ -1,0 +1,4 @@
+module.exports = {
+  currentDeviceId: "",
+  rooms: [],
+};
