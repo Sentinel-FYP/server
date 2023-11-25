@@ -1,6 +1,6 @@
 const variables = require("./variables");
 
-module.exports = (socket) => {
+module.exports = (socket, io) => {
   return (info) => {
     if (!variables.rooms[info.deviceId]) {
       // Room does not exist for current device. So device offline

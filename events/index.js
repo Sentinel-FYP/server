@@ -1,32 +1,35 @@
-const createRoomEvent = require("./createRoom");
-const joinRoomEvent = require("./joinRoom");
-const variables = require("./variables");
+const createRoomHandler = require("./createRoomEventHandler");
+const joinRoomHandler = require("./joinRoomEventHandler");
+const answerHandler = require("./answerEventHandler");
+const disconnectHandler = require("./disconnectEventHandler");
+const camerasDiscoveryHandler = require("./camerasDiscoveryHandler");
+const camerasDiscoveredHandler = require("./camerasDiscoveredHandler");
+const addCameraHandler = require("./addCameraHandler");
 
 module.exports = (io) => {
   io.on("connection", (socket) => {
     console.log("New Socket Connected with ID", socket.id);
 
+    let device = { currentDeviceId: "" };
+
     // Edge will create room of deviceId
-    socket.on("create room", createRoomEvent(socket));
-
+    socket.on("create room", createRoomHandler(socket, device));
     // User will join a room
-    socket.on("join room", joinRoomEvent(socket));
+    socket.on("join room", joinRoomHandler(socket, io));
+    socket.on("answer", answerHandler(io));
 
-    socket.on("answer", (data) => {
-      console.log("Server Received answer:", data);
-      console.log(rooms[data.deviceId].userSocketId);
-      io.to(rooms[data.deviceId].userSocketId).emit("answer", data);
-    });
+    // User will initiate a request to discover cameras
+    // params: {deviceId}
+    socket.on("cameras:discover", camerasDiscoveryHandler(io));
 
-    socket.on("disconnect", () => {
-      if (variables.rooms[variables.currentDeviceId]) {
-        delete variables.rooms[variables.currentDeviceId];
-      }
+    // Edge will return discovered cameras
+    // params: {deviceId}
+    socket.on("cameras:discovered", camerasDiscoveredHandler(io));
 
-      console.log(
-        "Disconnect",
-        variables.currentDeviceId ? "Device: " + variables.currentDeviceId : "User"
-      );
-    });
+    // User will initiate add camera event
+    // params: {deviceId, cameraId, login, password}
+    socket.on("cameras:add", addCameraHandler(io));
+
+    socket.on("disconnect", disconnectHandler(device));
   });
 };
