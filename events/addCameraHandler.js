@@ -1,3 +1,5 @@
+const { rooms } = require("./variables");
+
 module.exports = (io) => {
   return (info) => {
     console.log("User initiated cameras addition", info);

@@ -5,6 +5,7 @@ const disconnectHandler = require("./disconnectEventHandler");
 const camerasDiscoveryHandler = require("./camerasDiscoveryHandler");
 const camerasDiscoveredHandler = require("./camerasDiscoveredHandler");
 const addCameraHandler = require("./addCameraHandler");
+const addedCameraHandler = require("./addedCameraHandler");
 
 module.exports = (io) => {
   io.on("connection", (socket) => {
@@ -29,6 +30,9 @@ module.exports = (io) => {
     // User will initiate add camera event
     // params: {deviceId, cameraId, login, password}
     socket.on("cameras:add", addCameraHandler(io));
+
+    // Edge will initiate added camera event for confirmation
+    socket.on("cameras:added", addedCameraHandler(io));
 
     socket.on("disconnect", disconnectHandler(device));
   });
