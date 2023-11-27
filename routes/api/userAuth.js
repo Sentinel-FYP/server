@@ -96,8 +96,7 @@ router.post("/api/deviceAuth", async (req, res) => {
 
     const token = jwt.sign(
       { email: edgeDevice.owner.email, id: edgeDevice.owner._id, isAdmin },
-      process.env.SECRET_KEY,
-      { expiresIn: "24h" }
+      process.env.SECRET_KEY
     );
 
     res.status(200).json({ edgeDevice: edgeDevice, token });

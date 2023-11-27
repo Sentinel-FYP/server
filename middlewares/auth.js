@@ -10,10 +10,19 @@ const auth = async (req, res, next) => {
 
     const token = req.headers.authorization.split(" ")[1];
 
-    decodedData = jwt.verify(token, process.env.SECRET_KEY);
-    req.user = decodedData;
+    jwt.verify(token, process.env.SECRET_KEY, function (err, decoded) {
+      if (err) {
+        res.status(400).send({ message: "TOKEN_ERROR" });
+      } else {
+        decodedData = decoded;
 
-    next();
+        const isAdmin =
+          decodedData.roles?.filter((role) => role === "ADMIN").length === 1 ? true : false;
+
+        req.user = { ...decodedData, isAdmin };
+        next();
+      }
+    });
   } catch (error) {
     console.log("Auth Error", error);
     res.status(500).send({ message: "Something went wrong" });
