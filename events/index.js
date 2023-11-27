@@ -28,7 +28,7 @@ module.exports = (io) => {
     socket.on("cameras:discovered", camerasDiscoveredHandler(io));
 
     // User will initiate add camera event
-    // params: {deviceId, cameraId, login, password}
+    // params: {deviceId, cameraIP, login, password}
     socket.on("cameras:add", addCameraHandler(io));
 
     // Edge will initiate added camera event for confirmation

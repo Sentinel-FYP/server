@@ -66,7 +66,7 @@ router.post("/api/login", async (req, res) => {
     const isAdmin = user.roles.filter((role) => role === "ADMIN").length === 1 ? true : false;
 
     const token = jwt.sign({ email: user.email, id: user._id, isAdmin }, process.env.SECRET_KEY, {
-      expiresIn: "24h",
+      expiresIn: "30d",
     });
 
     const userData = {
