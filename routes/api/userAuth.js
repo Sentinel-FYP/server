@@ -33,7 +33,7 @@ router.post("/api/signup", async (req, res) => {
 
     user = await User.create(receivedUser);
     const token = jwt.sign({ email: user.email, id: user._id, isAdmin }, process.env.SECRET_KEY, {
-      expiresIn: "24h",
+      expiresIn: "30d",
     });
 
     const userData = {
