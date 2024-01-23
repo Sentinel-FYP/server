@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <img id="image" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"></script>
+    <script>
+      const socket = io.connect("http://localhost:5000");
+      const buffer = [];
+      socket.on("connect", () => {
+        console.log("connected");
+        socket.emit("join room", { deviceId: "abc" });
+      });
+
+      socket.on("stream", ({ frame }) => {
+        buffer.push(frame);
+        console.log(buffer);
+      });
+
+      setInterval(() => {
+        console.log(buffer.length);
+        if (buffer.length > 50) {
+          const frame = buffer.shift();
+          document.getElementById("image").src =
+            "data:image/jpeg;base64," + frame;
+        }
+      }, 1000 / 25);
+      socket.on("disconnect", () => {
+        console.log("disconnected");
+      });
+    </script>
+  </body>
+</html>

@@ -37,7 +37,7 @@ module.exports = (io) => {
 
     // streaming event handler
     socket.on("stream", (data) => {
-      io.to(rooms[data.deviceId].deviceSocketId).emit("stream", data);
+      io.to(rooms[data.deviceId].userSocketId).emit("stream", data);
     });
     socket.on("disconnect", disconnectHandler(device));
   });

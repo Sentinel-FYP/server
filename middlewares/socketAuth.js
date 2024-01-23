@@ -9,6 +9,7 @@ dotenv.config();
 
 const auth = (socket, next) => {
   try {
+    next();
     if (!socket.handshake.query.token) {
       const error = createSocketError("MISSING_TOKEN", "Token is missing!");
       next(error);
@@ -26,7 +27,10 @@ const auth = (socket, next) => {
   } catch (error) {
     console.log("Socket Auth Error", error);
 
-    const err = createSocketError("SERVER_ERROR", error.message || "An Error has occured!");
+    const err = createSocketError(
+      "SERVER_ERROR",
+      error.message || "An Error has occured!"
+    );
     next(err);
   }
 };
