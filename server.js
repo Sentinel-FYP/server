@@ -4,7 +4,7 @@ let app = express();
 const httpServer = require("http").createServer(app);
 
 const io = require("socket.io")(httpServer, { cors: true });
-io.use(require("./middlewares/socketAuth"));
+// io.use(require("./middlewares/socketAuth"));
 require("./events")(io);
 
 app.use(express.json());
