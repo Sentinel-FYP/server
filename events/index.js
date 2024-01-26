@@ -7,7 +7,6 @@ const camerasDiscoveredHandler = require("./camera/camerasDiscoveredHandler");
 const addCameraHandler = require("./camera/addCameraHandler");
 const addedCameraHandler = require("./camera/addedCameraHandler");
 const sendStreamEventHandler = require("./streaming/sendStreamEventHandler");
-const { rooms } = require("./variables");
 const startStreamEventHandler = require("./streaming/startStreamEventHandler");
 const endStreamEventHandler = require("./streaming/endStreamEventHandler");
 
