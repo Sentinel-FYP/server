@@ -1,4 +1,4 @@
-const variables = require("./variables");
+const variables = require("../variables");
 
 module.exports = (socket, io) => {
   return (info) => {

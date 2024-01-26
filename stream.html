@@ -17,8 +17,12 @@
         socket.emit("join room", { deviceId: "abc" });
       });
 
-      socket.on("stream", ({ frame }) => {
-        buffer.push(frame);
+      socket.on("stream:send", ({ frame }) => {
+        let base64 = btoa(
+          new Uint8Array(frame).reduce((data, byte) => data + String.fromCharCode(byte), "")
+        );
+        base64 = atob(base64);
+        buffer.push(base64);
         // console.log("Stream", buffer);
       });
 
@@ -26,12 +30,8 @@
         console.log(buffer.length);
         if (buffer.length > 50) {
           let frame = buffer.shift();
-          let base64 = btoa(
-            new Uint8Array(frame).reduce((data, byte) => data + String.fromCharCode(byte), "")
-          );
-          base64 = atob(base64);
-          console.log("Frame", base64);
-          document.getElementById("image").src = "data:image/jpeg;base64," + base64;
+          console.log("Frame", frame);
+          document.getElementById("image").src = "data:image/jpeg;base64," + frame;
         }
       }, 1000 / 30);
       socket.on("disconnect", () => {

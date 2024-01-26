@@ -1,4 +1,4 @@
-const { rooms } = require("./variables");
+const { rooms } = require("../variables");
 
 module.exports = (io) => {
   return (data) => {

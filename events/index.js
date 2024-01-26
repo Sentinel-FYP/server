@@ -1,12 +1,15 @@
-const createRoomHandler = require("./createRoomEventHandler");
-const joinRoomHandler = require("./joinRoomEventHandler");
-const answerHandler = require("./answerEventHandler");
+const createRoomHandler = require("./room/createRoomEventHandler");
+const joinRoomHandler = require("./room/joinRoomEventHandler");
+const answerHandler = require("./webrtc/answerEventHandler");
 const disconnectHandler = require("./disconnectEventHandler");
-const camerasDiscoveryHandler = require("./camerasDiscoveryHandler");
-const camerasDiscoveredHandler = require("./camerasDiscoveredHandler");
-const addCameraHandler = require("./addCameraHandler");
-const addedCameraHandler = require("./addedCameraHandler");
+const camerasDiscoveryHandler = require("./camera/camerasDiscoveryHandler");
+const camerasDiscoveredHandler = require("./camera/camerasDiscoveredHandler");
+const addCameraHandler = require("./camera/addCameraHandler");
+const addedCameraHandler = require("./camera/addedCameraHandler");
+const sendStreamEventHandler = require("./streaming/sendStreamEventHandler");
 const { rooms } = require("./variables");
+const startStreamEventHandler = require("./streaming/startStreamEventHandler");
+const endStreamEventHandler = require("./streaming/endStreamEventHandler");
 
 module.exports = (io) => {
   io.on("connection", (socket) => {
@@ -16,8 +19,13 @@ module.exports = (io) => {
 
     // Edge will create room of deviceId
     socket.on("create room", createRoomHandler(socket, device));
+    socket.on("room:create", createRoomHandler(socket, device));
+
     // User will join a room
     socket.on("join room", joinRoomHandler(socket, io));
+    socket.on("room:join", joinRoomHandler(socket, io));
+
+    // Edge will send answer to user
     socket.on("answer", answerHandler(io));
 
     // User will initiate a request to discover cameras
@@ -33,14 +41,22 @@ module.exports = (io) => {
     socket.on("cameras:add", addCameraHandler(io));
 
     // Edge will initiate added camera event for confirmation
+    // params: {deviceId, cameraIP}
     socket.on("cameras:added", addedCameraHandler(io));
 
-    // streaming event handler
-    socket.on("stream", (data) => {
-      if (rooms[data.deviceId].userSocketId) {
-        io.to(rooms[data.deviceId].userSocketId).emit("stream", data);
-      }
-    });
+    // User will initiate start stream event
+    // params: {deviceId, cameraIP}
+    socket.on("stream:start", startStreamEventHandler(io));
+
+    // Streaming event handler, Edge will send base64 frames
+    // params: {deviceId, cameraIP}
+    socket.on("stream:send", sendStreamEventHandler(io));
+    socket.on("stream", sendStreamEventHandler(io));
+
+    // User will initiate end stream event
+    // params: {deviceId, cameraIP}
+    socket.on("stream:end", endStreamEventHandler(io));
+
     socket.on("disconnect", disconnectHandler(device));
   });
 };
