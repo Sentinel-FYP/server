@@ -15,8 +15,9 @@
       socket.on("connect", () => {
         console.log("connected");
         socket.emit("join room", { deviceId: "abc" });
+        socket.emit("stream:start", { deviceId: "abc" });
       });
-
+      
       socket.on("stream:send", ({ frame }) => {
         let base64 = btoa(
           new Uint8Array(frame).reduce((data, byte) => data + String.fromCharCode(byte), "")
