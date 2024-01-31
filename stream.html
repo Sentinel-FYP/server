@@ -23,14 +23,14 @@
           deviceId: "abc",
           cameraIP: "192.168.1.7:8554",
           username: "admin",
-          password: "admin"
-        })
+          password: "admin",
+        });
       });
 
       socket.on("disconnect", () => {
-          console.log("disconnected");
-        });
-      
+        console.log("disconnected");
+      });
+
       socket.on("stream:send", ({ frame }) => {
         let base64 = btoa(
           new Uint8Array(frame).reduce((data, byte) => data + String.fromCharCode(byte), "")
@@ -47,32 +47,24 @@
         interval = setInterval(() => {
           //console.log(buffer.length);
           if (buffer.length > 60) {
-            console.log('buffer length is now greater')
+            console.log("buffer length is now greater");
             let frame = buffer.shift();
             //console.log("Frame", frame);
             document.getElementById("image").src = "data:image/jpeg;base64," + frame;
-          }
-          else {
-            console.log('buffer length is less ')
+          } else {
+            console.log("buffer length is less ");
           }
         }, 1000 / 60);
       });
 
       document.getElementById("stop-btn").addEventListener("click", () => {
         socket.emit("stream:end", { deviceId: "abc", cameraIP: "192.168.1.7:8554" });
-        console.log(interval)
-        if(typeof interval !== 'undefined'){
-          console.log('clearing interval');
+        console.log(interval);
+        if (typeof interval !== "undefined") {
+          console.log("clearing interval");
           clearInterval(interval);
         }
-          
-    
-
-        
       });
-
-      
-      
     </script>
   </body>
 </html>

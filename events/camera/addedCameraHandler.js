@@ -1,5 +1,6 @@
 const { rooms } = require("../variables");
 const EdgeDevice = require("../../models/EdgeDevice");
+const mongoose = require("mongoose");
 
 module.exports = (io) => {
   return (info) => {
