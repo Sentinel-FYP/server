@@ -6,6 +6,7 @@ const camerasDiscoveryHandler = require("./camera/camerasDiscoveryHandler");
 const camerasDiscoveredHandler = require("./camera/camerasDiscoveredHandler");
 const addCameraHandler = require("./camera/addCameraHandler");
 const addedCameraHandler = require("./camera/addedCameraHandler");
+const sendAlertHandler = require("./camera/sendAlertHandler");
 const updateThumbnailHandler = require("./camera/updateThumbnailHandler");
 const sendStreamEventHandler = require("./streaming/sendStreamEventHandler");
 const startStreamEventHandler = require("./streaming/startStreamEventHandler");
@@ -17,7 +18,7 @@ module.exports = (io) => {
 
     let device = { currentDeviceId: "" };
 
-    // Edge will create room of deviceId
+    // Edge will create room of deviceID
     socket.on("create room", createRoomHandler(socket, device));
     socket.on("room:create", createRoomHandler(socket, device));
 
@@ -29,37 +30,41 @@ module.exports = (io) => {
     socket.on("answer", answerHandler(io));
 
     // User will initiate a request to discover cameras
-    // params: {deviceId}
+    // params: {deviceID}
     socket.on("cameras:discover", camerasDiscoveryHandler(io));
 
     // Edge will return discovered cameras
-    // params: {deviceId}
+    // params: {deviceID}
     socket.on("cameras:discovered", camerasDiscoveredHandler(io));
 
     // User will initiate add camera event
-    // params: {deviceId, cameraIP, login, password}
+    // params: {deviceID, localIP, login, password}
     socket.on("cameras:add", addCameraHandler(io));
 
     // Edge will initiate added camera event for confirmation
-    // params: {deviceId, cameraIP}
+    // params: {deviceID, localIP}
     socket.on("cameras:added", addedCameraHandler(io));
 
     // Edge will initiate this event to update camera thumbnails
-    // params: {deviceId, cameraIP, thumbnail}
+    // params: {deviceID, localIP, thumbnail}
     socket.on("cameras:thumbnail:update", updateThumbnailHandler(io));
 
     // User will initiate start stream event
-    // params: {deviceId, cameraIP}
+    // params: {deviceID, localIP}
     socket.on("stream:start", startStreamEventHandler(io));
 
     // Streaming event handler, Edge will send base64 frames
-    // params: {deviceId, cameraIP}
+    // params: {deviceID, localIP}
     socket.on("stream:send", sendStreamEventHandler(io));
     socket.on("stream", sendStreamEventHandler(io));
 
     // User will initiate end stream event
-    // params: {deviceId, cameraIP}
+    // params: {deviceID, localIP}
     socket.on("stream:end", endStreamEventHandler(io));
+
+    // Send Alert to User
+    // params: {deviceID, localIP}
+    socket.on("alert:send", sendAlertHandler(io));
 
     socket.on("disconnect", disconnectHandler(device));
   });
