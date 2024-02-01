@@ -1,6 +1,7 @@
 const createRoomHandler = require("./room/createRoomEventHandler");
 const joinRoomHandler = require("./room/joinRoomEventHandler");
 const answerHandler = require("./webrtc/answerEventHandler");
+const offerHandler = require("./webrtc/offerEventHandler");
 const disconnectHandler = require("./disconnectEventHandler");
 const camerasDiscoveryHandler = require("./camera/camerasDiscoveryHandler");
 const camerasDiscoveredHandler = require("./camera/camerasDiscoveredHandler");
@@ -26,8 +27,11 @@ module.exports = (io) => {
     socket.on("join room", joinRoomHandler(socket, io));
     socket.on("room:join", joinRoomHandler(socket, io));
 
+    // User will send offer to Edge
+    socket.on("webrtc:offer", offerHandler(io));
+
     // Edge will send answer to user
-    socket.on("answer", answerHandler(io));
+    socket.on("webrtc:answer", answerHandler(io));
 
     // User will initiate a request to discover cameras
     // params: {deviceID}

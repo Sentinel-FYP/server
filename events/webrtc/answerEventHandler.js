@@ -5,7 +5,7 @@ module.exports = (io) => {
     console.log("Server Received answer:", data);
     console.log("Sending to user with Id => ", rooms[data.deviceId]?.userSocketId);
     if (rooms[data.deviceId]?.userSocketId) {
-      io.to(rooms[data.deviceId].userSocketId).emit("answer", data);
+      io.to(rooms[data.deviceId].userSocketId).emit("webrtc:answer", data);
     } else {
       console.log("No user connected!");
     }
