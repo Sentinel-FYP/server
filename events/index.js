@@ -5,6 +5,7 @@ const offerHandler = require("./webrtc/offerEventHandler");
 const disconnectHandler = require("./disconnectEventHandler");
 const camerasDiscoveryHandler = require("./camera/camerasDiscoveryHandler");
 const camerasDiscoveredHandler = require("./camera/camerasDiscoveredHandler");
+const newCameraHandler = require("./camera/newCameraHandler");
 const addCameraHandler = require("./camera/addCameraHandler");
 const addedCameraHandler = require("./camera/addedCameraHandler");
 const sendAlertHandler = require("./camera/sendAlertHandler");
@@ -40,6 +41,10 @@ module.exports = (io) => {
     // Edge will return discovered cameras
     // params: {deviceID}
     socket.on("cameras:discovered", camerasDiscoveredHandler(io));
+
+    // Edge will emit this event whenever new camera is found
+    // params: {deviceID, ...camDetails}
+    socket.on("camera:discovered:new", newCameraHandler(io));
 
     // User will initiate add camera event
     // params: {deviceID, localIP, login, password}
