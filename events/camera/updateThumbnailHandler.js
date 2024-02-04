@@ -11,9 +11,9 @@ module.exports = (io) => {
 
 async function updateThumbnailInDB(info) {
   try {
-    let { deviceID, localIP, thumbnail } = info;
+    let { deviceID, cameraIP, thumbnail } = info;
 
-    if (!deviceID || !localIP || !thumbnail) {
+    if (!deviceID || !cameraIP || !thumbnail) {
       throw new Error("Camera fields are Incomplete");
     }
 
@@ -23,12 +23,12 @@ async function updateThumbnailInDB(info) {
       throw new Error("Device with this Id does not exist");
     }
 
-    let existingCamera = existingDevice.cameras.filter((cam) => cam.localIP === localIP)[0];
+    let existingCamera = existingDevice.cameras.filter((cam) => cam.cameraIP === cameraIP)[0];
     if (!existingCamera) throw new Error("Camera does not exist");
 
     existingCamera = { ...existingCamera, thumbnail };
     existingDevice.cameras = existingDevice.cameras.map((cam) =>
-      cam.localIP === localIP ? { ...cam, thumbnail } : cam
+      cam.cameraIP === cameraIP ? { ...cam, thumbnail } : cam
     );
 
     await existingDevice.save();

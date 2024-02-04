@@ -8,11 +8,12 @@ const camerasDiscoveredHandler = require("./camera/camerasDiscoveredHandler");
 const newCameraHandler = require("./camera/newCameraHandler");
 const addCameraHandler = require("./camera/addCameraHandler");
 const addedCameraHandler = require("./camera/addedCameraHandler");
-const sendAlertHandler = require("./camera/sendAlertHandler");
 const updateThumbnailHandler = require("./camera/updateThumbnailHandler");
 const sendStreamEventHandler = require("./streaming/sendStreamEventHandler");
 const startStreamEventHandler = require("./streaming/startStreamEventHandler");
 const endStreamEventHandler = require("./streaming/endStreamEventHandler");
+const sendAlertHandler = require("./utils/sendAlertHandler");
+const errorHandler = require("./utils/errorHandler");
 
 module.exports = (io) => {
   io.on("connection", (socket) => {
@@ -47,32 +48,32 @@ module.exports = (io) => {
     socket.on("camera:discovered:new", newCameraHandler(io));
 
     // User will initiate add camera event
-    // params: {deviceID, localIP, login, password}
+    // params: {deviceID, cameraIP, login, password}
     socket.on("cameras:add", addCameraHandler(io));
 
     // Edge will initiate added camera event for confirmation
-    // params: {deviceID, localIP}
+    // params: {deviceID, cameraIP}
     socket.on("cameras:added", addedCameraHandler(io));
 
     // Edge will initiate this event to update camera thumbnails
-    // params: {deviceID, localIP, thumbnail}
+    // params: {deviceID, cameraIP, thumbnail}
     socket.on("cameras:thumbnail:update", updateThumbnailHandler(io));
 
     // User will initiate start stream event
-    // params: {deviceID, localIP}
+    // params: {deviceID, cameraIP}
     socket.on("stream:start", startStreamEventHandler(io));
 
     // Streaming event handler, Edge will send base64 frames
-    // params: {deviceID, localIP}
+    // params: {deviceID, cameraIP}
     socket.on("stream:send", sendStreamEventHandler(io));
     socket.on("stream", sendStreamEventHandler(io));
 
     // User will initiate end stream event
-    // params: {deviceID, localIP}
+    // params: {deviceID, cameraIP}
     socket.on("stream:end", endStreamEventHandler(io));
 
     // Send Alert to User
-    // params: {deviceID, localIP}
+    // params: {deviceID, cameraIP}
     socket.on("alert:send", sendAlertHandler(io));
 
     // Edge will send any error occured to User

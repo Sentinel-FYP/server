@@ -3,6 +3,7 @@ const AnomalyLog = require("../../models/AnomalyLog");
 
 const multer = require("multer");
 const fs = require("fs");
+const getSchemaError = require("../../utils/schemaError");
 
 const upload = multer({ dest: "/tmp/" });
 
@@ -26,7 +27,8 @@ router.get("/api/anomalyLog/:deviceId", async (req, res) => {
     res.status(200).json(anomalyLogs);
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Something went wrong" });
+    const schemaErrorMessage = getSchemaError(error);
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 
@@ -49,7 +51,8 @@ router.post("/api/anomalyLog", upload.single("thumbnail"), async (req, res) => {
     res.status(200).json(anomalyLog);
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Something went wrong" });
+    const schemaErrorMessage = getSchemaError(error);
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 

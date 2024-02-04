@@ -20,9 +20,9 @@ module.exports = (io) => {
 
 async function addCameraInDB(info) {
   try {
-    let { deviceID, cameraName, localIP, RTSPChannel } = info;
+    let { deviceID, cameraName, cameraIP } = info;
 
-    if (!deviceID || !cameraName || !localIP || !RTSPChannel) {
+    if (!deviceID || !cameraName || !cameraIP) {
       throw new Error("Camera fields are Incomplete");
     }
 
@@ -33,7 +33,7 @@ async function addCameraInDB(info) {
     }
 
     let cameraExists =
-      existingDevice.cameras.filter((cam) => cam.localIP === localIP).length === 1 ? true : false;
+      existingDevice.cameras.filter((cam) => cam.cameraIP === cameraIP).length === 1 ? true : false;
 
     if (cameraExists) {
       throw new Error("Camera with this IP already exists");
@@ -41,7 +41,7 @@ async function addCameraInDB(info) {
 
     existingDevice.cameras = [
       ...existingDevice.cameras,
-      { _id: new mongoose.Types.ObjectId(), cameraName, localIP, RTSPChannel },
+      { _id: new mongoose.Types.ObjectId(), cameraName, cameraIP },
     ];
     await existingDevice.save();
   } catch (error) {

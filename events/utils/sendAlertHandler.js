@@ -11,10 +11,10 @@ module.exports = (io) => {
 
 async function sendAlertToUser(info) {
   try {
-    let { deviceID, localIP } = info;
+    let { deviceID, cameraIP } = info;
 
-    if (!deviceID || !localIP) {
-      throw new Error("Device ID and Local Camera IP is required!");
+    if (!deviceID || !cameraIP) {
+      throw new Error("Device ID and Camera IP is required!");
     }
 
     let existingDevice = await EdgeDevice.findOne({ deviceID }).populate("owner");
@@ -23,7 +23,7 @@ async function sendAlertToUser(info) {
       throw new Error("Device with this Id does not exist");
     }
 
-    let existingCamera = existingDevice.cameras.filter((cam) => cam.localIP === localIP)[0];
+    let existingCamera = existingDevice.cameras.filter((cam) => cam.cameraIP === cameraIP)[0];
     if (!existingCamera) throw new Error("Camera does not exist");
 
     const deviceName = existingDevice.deviceName;

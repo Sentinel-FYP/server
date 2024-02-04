@@ -4,6 +4,7 @@ const EdgeDevice = require("../../models/EdgeDevice");
 
 const isAdmin = require("../../middlewares/isAdmin");
 const { default: mongoose } = require("mongoose");
+const getSchemaError = require("../../utils/schemaError");
 
 const router = express.Router();
 
@@ -13,7 +14,8 @@ router.get("/api/edgeDevices", async (req, res) => {
     res.status(200).json(edgeDevices);
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Something went wrong" });
+    const schemaErrorMessage = getSchemaError(error);
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 
@@ -23,7 +25,8 @@ router.get("/api/edgeDevices/:deviceID", async (req, res) => {
     res.status(200).json(edgeDevices);
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Something went wrong" });
+    const schemaErrorMessage = getSchemaError(error);
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 
@@ -45,18 +48,17 @@ router.post("/api/edgeDevices", isAdmin, async (req, res) => {
     res.status(200).json(edgeDevice);
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Something went wrong" });
+    const schemaErrorMessage = getSchemaError(error);
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 
 router.post("/api/edgeDevices/cameras", async (req, res) => {
   try {
-    let { deviceID, cameraName, localIP, RTSPChannel } = req.body;
+    let { deviceID, cameraName, cameraIP } = req.body;
 
-    if (!deviceID || !cameraName || !localIP || !RTSPChannel) {
-      return res
-        .status(400)
-        .json({ message: "Device Id, Camera Name, Local IP and RTSPChannel is required!" });
+    if (!deviceID || !cameraName || !cameraIP) {
+      return res.status(400).json({ message: "Device Id, Camera Name and Camera IP is required!" });
     }
 
     let existingDevice = await EdgeDevice.findOne({ deviceID });
@@ -66,7 +68,7 @@ router.post("/api/edgeDevices/cameras", async (req, res) => {
     }
 
     let cameraExists =
-      existingDevice.cameras.filter((cam) => cam.localIP === localIP).length === 1 ? true : false;
+      existingDevice.cameras.filter((cam) => cam.cameraIP === cameraIP).length === 1 ? true : false;
 
     if (cameraExists) {
       return res.status(400).json({ message: "Camera with this IP already exists" });
@@ -74,13 +76,14 @@ router.post("/api/edgeDevices/cameras", async (req, res) => {
 
     existingDevice.cameras = [
       ...existingDevice.cameras,
-      { _id: new mongoose.Types.ObjectId(), cameraName, localIP, RTSPChannel },
+      { _id: new mongoose.Types.ObjectId(), cameraName, cameraIP },
     ];
+    console.log(existingDevice);
     await existingDevice.save();
     res.status(200).json(existingDevice);
   } catch (error) {
-    console.log(error);
-    res.status(500).send({ message: "Something went wrong" });
+    const schemaErrorMessage = getSchemaError(error);
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 
@@ -100,7 +103,8 @@ router.put("/api/edgeDevices/register", async (req, res) => {
     res.status(200).json(edgeDevice);
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Something went wrong" });
+    const schemaErrorMessage = getSchemaError(error);
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 

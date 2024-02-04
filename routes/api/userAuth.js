@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 
 const User = require("../../models/User");
 const EdgeDevice = require("../../models/EdgeDevice");
+const getSchemaError = require("../../utils/schemaError");
 
 dotenv.config();
 
@@ -45,7 +46,8 @@ router.post("/api/signup", async (req, res) => {
     res.status(200).json({ user: userData, token });
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Something went wrong" });
+    const schemaErrorMessage = getSchemaError(error);
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 
