@@ -75,6 +75,10 @@ module.exports = (io) => {
     // params: {deviceID, localIP}
     socket.on("alert:send", sendAlertHandler(io));
 
+    // Edge will send any error occured to User
+    // params: {deviceID}
+    socket.on("status:error", errorHandler(io));
+
     socket.on("disconnect", disconnectHandler(device));
   });
 };
