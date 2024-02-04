@@ -22,7 +22,7 @@ async function addCameraInDB(info) {
   try {
     let { deviceID, cameraName, cameraIP, username, password, active, thumbnail } = info;
 
-    if (!deviceID || !cameraName || !cameraIP || !username || !password) {
+    if (!deviceID || !cameraName || !cameraIP) {
       throw new Error("Camera fields are Incomplete");
     }
 

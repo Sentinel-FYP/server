@@ -12,6 +12,7 @@ const updateHandler = require("./camera/updateHandler");
 const sendStreamEventHandler = require("./streaming/sendStreamEventHandler");
 const startStreamEventHandler = require("./streaming/startStreamEventHandler");
 const endStreamEventHandler = require("./streaming/endStreamEventHandler");
+const getDiscoveredCamerasHandler = require("./camera/getDiscoveredCamerasHandler");
 const sendAlertHandler = require("./utils/sendAlertHandler");
 const errorHandler = require("./utils/errorHandler");
 
@@ -46,6 +47,10 @@ module.exports = (io) => {
     // Edge will emit this event whenever new camera is found
     // params: {deviceID, ...camDetails}
     socket.on("camera:discovered:new", newCameraHandler(io));
+
+    // User will initiate an event to get already discovered cameras
+    // params: {deviceID}
+    socket.on("cameras:discoverd:get", getDiscoveredCamerasHandler(io));
 
     // User will initiate add camera event
     // params: {deviceID, cameraName, cameraIP, username, password}

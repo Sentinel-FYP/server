@@ -3,8 +3,8 @@ const mongoose = require("mongoose");
 let CameraSchema = mongoose.Schema({
   cameraName: { type: String, required: true },
   cameraIP: { type: String, required: true },
-  username: { type: String, required: true },
-  password: { type: String, required: true },
+  username: { type: String, default: "" },
+  password: { type: String, default: "" },
   thumbnail: { type: String },
   active: { type: Boolean, default: true },
 });
