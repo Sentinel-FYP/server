@@ -9,9 +9,9 @@ const upload = multer({ dest: "/tmp/" });
 
 const router = express.Router();
 
-router.get("/api/anomalyLog/:deviceId", async (req, res) => {
+router.get("/api/anomalyLog/:deviceID", async (req, res) => {
   try {
-    const fromDevice = req.params.deviceId;
+    const fromDevice = req.params.deviceID;
     if (!fromDevice) return res.status(400).json({ message: "Device ID is required" });
 
     const anomalyLogs = await AnomalyLog.find({

@@ -1,5 +1,9 @@
 const http = require("https");
 
+const dotenv = require("dotenv");
+
+dotenv.config();
+
 const ONESIGNAL_API_KEY = process.env.ONESIGNAL_API_KEY;
 const ONESIGNAL_APP_ID = process.env.ONESIGNAL_APP_ID;
 const ONESIGNAL_BASE_URL = process.env.ONESIGNAL_BASE_URL;

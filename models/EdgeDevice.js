@@ -6,7 +6,7 @@ let CameraSchema = mongoose.Schema({
   username: { type: String, required: true },
   password: { type: String, required: true },
   thumbnail: { type: String },
-  active: { type: Boolean, default: false },
+  active: { type: Boolean, default: true },
 });
 
 let modelSchema = mongoose.Schema({

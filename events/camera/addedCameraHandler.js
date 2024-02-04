@@ -8,21 +8,21 @@ module.exports = (io) => {
 
     addCameraInDB(info)
       .then(() => {
-        if (rooms[info.deviceId]?.userSocketId) {
-          io.to(rooms[info.deviceId].userSocketId).emit("cameras:added", info);
+        if (rooms[info.deviceID]?.userSocketId) {
+          io.to(rooms[info.deviceID].userSocketId).emit("cameras:added", info);
         } else {
           console.log("No user connected!");
         }
       })
-      .catch((e) => console.log("Error adding cameras in DB", e));
+      .catch((e) => console.log("Error adding cameras in DB:", e.message));
   };
 };
 
 async function addCameraInDB(info) {
   try {
-    let { deviceID, cameraName, cameraIP } = info;
+    let { deviceID, cameraName, cameraIP, username, password, active, thumbnail } = info;
 
-    if (!deviceID || !cameraName || !cameraIP) {
+    if (!deviceID || !cameraName || !cameraIP || !username || !password) {
       throw new Error("Camera fields are Incomplete");
     }
 
@@ -33,19 +33,28 @@ async function addCameraInDB(info) {
     }
 
     let cameraExists =
-      existingDevice.cameras.filter((cam) => cam.cameraIP === cameraIP).length === 1 ? true : false;
+      existingDevice.cameras.filter((cam) => cam.cameraName === cameraName).length === 1
+        ? true
+        : false;
 
     if (cameraExists) {
-      throw new Error("Camera with this IP already exists");
+      throw new Error("Camera with this Name already exists");
     }
 
     existingDevice.cameras = [
       ...existingDevice.cameras,
-      { _id: new mongoose.Types.ObjectId(), cameraName, cameraIP },
+      {
+        _id: new mongoose.Types.ObjectId(),
+        cameraName,
+        cameraIP,
+        username,
+        password,
+        active,
+        thumbnail,
+      },
     ];
     await existingDevice.save();
   } catch (error) {
-    console.log("Cameras Adding Error", error);
-    throw new Error("An error has occured while saving cameras to DB");
+    throw new Error(error.message);
   }
 }

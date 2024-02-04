@@ -68,10 +68,12 @@ router.post("/api/edgeDevices/cameras", async (req, res) => {
     }
 
     let cameraExists =
-      existingDevice.cameras.filter((cam) => cam.cameraIP === cameraIP).length === 1 ? true : false;
+      existingDevice.cameras.filter((cam) => cam.cameraName === cameraName).length === 1
+        ? true
+        : false;
 
     if (cameraExists) {
-      return res.status(400).json({ message: "Camera with this IP already exists" });
+      return res.status(400).json({ message: "Camera with this name already exists" });
     }
 
     existingDevice.cameras = [

@@ -18,9 +18,9 @@
       const buffer = [];
       socket.on("connect", () => {
         console.log("connected");
-        socket.emit("join room", { deviceId: "abc" });
+        socket.emit("join room", { deviceID: "abc" });
         socket.emit("cameras:add", {
-          deviceId: "abc",
+          deviceID: "abc",
           cameraIP: "192.168.1.7:8554",
           username: "admin",
           password: "admin",
@@ -43,7 +43,7 @@
       let interval = undefined;
 
       document.getElementById("start-btn").addEventListener("click", () => {
-        socket.emit("stream:start", { deviceId: "abc", cameraIP: "192.168.1.7:8554" });
+        socket.emit("stream:start", { deviceID: "abc", cameraIP: "192.168.1.7:8554" });
         interval = setInterval(() => {
           //console.log(buffer.length);
           if (buffer.length > 60) {
@@ -58,7 +58,7 @@
       });
 
       document.getElementById("stop-btn").addEventListener("click", () => {
-        socket.emit("stream:end", { deviceId: "abc", cameraIP: "192.168.1.7:8554" });
+        socket.emit("stream:end", { deviceID: "abc", cameraIP: "192.168.1.7:8554" });
         console.log(interval);
         if (typeof interval !== "undefined") {
           console.log("clearing interval");
