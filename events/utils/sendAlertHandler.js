@@ -11,7 +11,7 @@ module.exports = (io) => {
 
 async function sendAlertToUser(info) {
   try {
-    let { deviceID, cameraIP } = info;
+    let { deviceID, cameraIP, notificationTitle, notificationMessage } = info;
 
     if (!deviceID || !cameraIP) {
       throw new Error("Device ID and Camera IP is required!");
@@ -26,15 +26,9 @@ async function sendAlertToUser(info) {
     let existingCamera = existingDevice.cameras.filter((cam) => cam.cameraIP === cameraIP)[0];
     if (!existingCamera) throw new Error("Camera does not exist");
 
-    const deviceName = existingDevice.deviceName;
-    const cameraName = existingCamera.cameraName;
     const userId = existingDevice?.owner?._id;
 
-    sendNotification(
-      `Anomaly detected on ${cameraName} Camera at ${deviceName}`,
-      "Anomaly Detected",
-      userId
-    );
+    sendNotification(notificationMessage, notificationTitle, userId);
   } catch (error) {
     console.log("Notification sending Error", error);
   }
