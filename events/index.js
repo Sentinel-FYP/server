@@ -47,6 +47,7 @@ module.exports = (io) => {
     // Edge will emit this event whenever new camera is found
     // params: {deviceID, ...camDetails}
     socket.on("camera:discovered:new", newCameraHandler(io));
+    socket.on("cameras:discovered:new", newCameraHandler(io));
 
     // User will initiate an event to get already discovered cameras
     // params: {deviceID}
