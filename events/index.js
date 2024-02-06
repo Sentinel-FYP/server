@@ -51,7 +51,7 @@ module.exports = (io) => {
 
     // User will initiate an event to get already discovered cameras
     // params: {deviceID}
-    socket.on("cameras:discoverd:get", getDiscoveredCamerasHandler(io));
+    socket.on("cameras:discovered:get", getDiscoveredCamerasHandler(io));
 
     // User will initiate add camera event
     // params: {deviceID, cameraName, cameraIP, username, password}
