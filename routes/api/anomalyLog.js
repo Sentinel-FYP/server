@@ -56,6 +56,7 @@ async function postLog(req, res) {
       Bucket: process.env.AWS_S3_BUCKET_NAME,
       Key: fromDevice + "/" + video.originalname,
       Body: videoStream,
+      ContentType: video.mimetype,
     };
 
     const s3UploadResponse = await s3.upload(params).promise();
