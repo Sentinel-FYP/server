@@ -4,7 +4,7 @@ const AnomalyLog = require("../../models/AnomalyLog");
 const multer = require("multer");
 const fs = require("fs");
 const getSchemaError = require("../../utils/schemaError");
-const { s3, createPresignedUrl } = require("../../utils/aws");
+const { s3, createPresignedUrl, createCloudFrontURL } = require("../../utils/aws");
 
 const upload = multer({ dest: "/tmp/" });
 
@@ -115,7 +115,8 @@ router.get("/api/anomalyLogs/:anomalyLogID", async (req, res) => {
         message: "You are not authorized to access this device's logs",
       });
 
-    let videoUri = await createPresignedUrl(anomalyLog.videoUri);
+    // let videoUri = await createPresignedUrl(anomalyLog.videoUri);
+    let videoUri = createCloudFrontURL(anomalyLog.videoUri);
     anomalyLog = { ...anomalyLog, videoUri };
 
     res.status(200).json(anomalyLog);
