@@ -17,6 +17,12 @@ let modelSchema = mongoose.Schema({
     ref: "User",
     default: null,
   },
+  category: {
+    type: String,
+    default: "Other",
+    enum: ["Home", "Office", "School", "Shop", "Crib", "Outdoor", "Other"],
+  },
+
   cameras: [CameraSchema],
 });
 
