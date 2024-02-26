@@ -63,7 +63,7 @@ module.exports = (io) => {
 
     // Edge will initiate this event to update camera thumbnails
     // params: {deviceID, cameraName, cameraIP, thumbnail or active}
-    socket.on("cameras:update", updateHandler());
+    socket.on("cameras:update", updateHandler(io));
 
     // User will initiate start stream event
     // params: {deviceID, cameraName, cameraIP}

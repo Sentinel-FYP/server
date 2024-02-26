@@ -32,13 +32,13 @@ const createCloudFrontURL = (key) => {
   const signer = new AWS.CloudFront.Signer(CLOUDFRONT_ACCESS_KEY_ID, CLOUDFRONT_PRIVATE_KEY);
 
   // 2 hours as milliseconds to use for link expiration
-  const twoDays = 2 * 60 * 60 * 1000;
+  const twoHours = 2 * 60 * 60 * 1000;
   const resourceURL = CLOUDFRONT_DOMAIN_URL + key;
   console.log(resourceURL);
 
   const signedUrl = signer.getSignedUrl({
     url: resourceURL,
-    expires: Math.floor((Date.now() + twoDays) / 1000),
+    expires: Math.floor((Date.now() + twoHours) / 1000),
   });
   return signedUrl;
 };
