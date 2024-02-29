@@ -7,6 +7,12 @@ let modelSchema = mongoose.Schema(
     fromDevice: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "EdgeDevice",
+      // required: true,
+    },
+    fromCamera: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "EdgeDevice.cameras",
+      // required: true,
     },
     videoUri: String,
     thumbnail: String,

@@ -1,10 +1,15 @@
 const express = require("express");
 const AnomalyLog = require("../../models/AnomalyLog");
+const EdgeDevice = require("../../models/EdgeDevice");
 
 const multer = require("multer");
 const fs = require("fs");
 const getSchemaError = require("../../utils/schemaError");
-const { s3, createPresignedUrl, createCloudFrontURL } = require("../../utils/aws");
+const {
+  s3,
+  createPresignedUrl,
+  createCloudFrontURL,
+} = require("../../utils/aws");
 
 const upload = multer({ dest: "/tmp/" });
 
@@ -13,7 +18,8 @@ const router = express.Router();
 async function getLogs(req, res) {
   try {
     const fromDevice = req.params.deviceID;
-    if (!fromDevice) return res.status(400).json({ message: "Device ID is required" });
+    if (!fromDevice)
+      return res.status(400).json({ message: "Device ID is required" });
 
     const anomalyLogs = await AnomalyLog.find({
       fromDevice: fromDevice,
@@ -31,22 +37,41 @@ async function getLogs(req, res) {
   } catch (error) {
     console.log(error);
     const schemaErrorMessage = getSchemaError(error);
-    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
+    res
+      .status(500)
+      .send({ message: schemaErrorMessage || "Something went wrong" });
   }
 }
 
 router.get("/api/anomalyLog/:deviceID", getLogs);
 router.get("/api/edgeDevices/:deviceID/anomalyLogs", getLogs);
 
+router.get("/api/anomalyLogs", async (req, res) => {
+  try {
+    const devices = await EdgeDevice.find({ owner: req.user.id }).select("_id");
+
+    const anomalyLogs = await AnomalyLog.find({ fromDevice: { $in: devices } })
+      .populate("fromDevice", "deviceID deviceName")
+      .sort({ createdAt: -1 });
+    res.status(200).json(anomalyLogs);
+  } catch (error) {
+    console.log(error);
+    const schemaErrorMessage = getSchemaError(error);
+    res
+      .status(500)
+      .send({ message: schemaErrorMessage || "Something went wrong" });
+  }
+});
 async function postLog(req, res) {
   try {
     let anomaly = req.body;
     let fromDevice = anomaly.fromDevice;
-
+    let fromCamera = anomaly.fromCamera;
     let thumbnail = req.files.thumbnail[0];
     let video = req.files.video[0];
 
-    if (!thumbnail) return res.status(400).json({ message: "Thumbnail is required!" });
+    if (!thumbnail)
+      return res.status(400).json({ message: "Thumbnail is required!" });
     if (!video) return res.status(400).json({ message: "Video is required!" });
 
     let videoStream = fs.readFileSync(video.path);
@@ -74,7 +99,9 @@ async function postLog(req, res) {
   } catch (error) {
     console.log(error);
     const schemaErrorMessage = getSchemaError(error);
-    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
+    res
+      .status(500)
+      .send({ message: schemaErrorMessage || "Something went wrong" });
   }
 }
 
@@ -100,7 +127,8 @@ router.post(
 router.get("/api/anomalyLogs/:anomalyLogID", async (req, res) => {
   try {
     const anomalyLogID = req.params.anomalyLogID;
-    if (!anomalyLogID) return res.status(400).json({ message: "Anomaly Log ID is required" });
+    if (!anomalyLogID)
+      return res.status(400).json({ message: "Anomaly Log ID is required" });
 
     let anomalyLog = await AnomalyLog.findOne({
       _id: anomalyLogID,
@@ -109,7 +137,9 @@ router.get("/api/anomalyLogs/:anomalyLogID", async (req, res) => {
       .lean();
 
     if (!anomalyLog)
-      return res.status(404).json({ message: "Anomaly Log with this ID does not exist!" });
+      return res
+        .status(404)
+        .json({ message: "Anomaly Log with this ID does not exist!" });
     if (anomalyLog.fromDevice.owner != req.user.id)
       return res.status(403).json({
         message: "You are not authorized to access this device's logs",
@@ -123,7 +153,9 @@ router.get("/api/anomalyLogs/:anomalyLogID", async (req, res) => {
   } catch (error) {
     console.log(error);
     const schemaErrorMessage = getSchemaError(error);
-    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
+    res
+      .status(500)
+      .send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 
