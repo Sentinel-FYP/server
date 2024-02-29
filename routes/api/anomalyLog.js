@@ -73,7 +73,12 @@ async function postLog(req, res) {
     if (!thumbnail)
       return res.status(400).json({ message: "Thumbnail is required!" });
     if (!video) return res.status(400).json({ message: "Video is required!" });
-
+    const camera = await EdgeDevice.findOne({
+      _id: fromDevice,
+      cameras: { $elemMatch: { _id: fromCamera } },
+    });
+    if (!camera)
+      return res.status(400).json({ message: "Camera does not exist!" });
     let videoStream = fs.readFileSync(video.path);
 
     // Upload Video to S3 Bucket
