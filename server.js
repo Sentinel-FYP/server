@@ -13,12 +13,13 @@ app.use(express.static("public"));
 
 app.use(require("morgan")(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-app.use("/", require("./routes/api/userAuth"));
+app.use("/", require("./routes/api/auth"));
 
 const auth = require("./middlewares/auth");
 
 app.use("/", auth, require("./routes/api/edgeDevice"));
 app.use("/", auth, require("./routes/api/anomalyLog"));
+app.use("/", auth, require("./routes/api/user"));
 
 app.use((req, res, next) => {
   res.status(404).send("Not Found");

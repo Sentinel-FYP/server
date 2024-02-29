@@ -38,6 +38,7 @@ router.post("/api/signup", async (req, res) => {
     });
 
     const userData = {
+      userID: user._id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -72,6 +73,7 @@ router.post("/api/login", async (req, res) => {
     });
 
     const userData = {
+      userID: user._id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
