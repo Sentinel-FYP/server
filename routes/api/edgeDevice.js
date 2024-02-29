@@ -1,7 +1,6 @@
 const express = require("express");
 
 const EdgeDevice = require("../../models/EdgeDevice");
-
 const isAdmin = require("../../middlewares/isAdmin");
 const { default: mongoose } = require("mongoose");
 const getSchemaError = require("../../utils/schemaError");
@@ -99,6 +98,45 @@ router.post("/api/edgeDevices/cameras", async (req, res) => {
       ...existingDevice.cameras,
       { _id: new mongoose.Types.ObjectId(), cameraName, cameraIP },
     ];
+    console.log(existingDevice);
+    await existingDevice.save();
+    res.status(200).json(existingDevice);
+  } catch (error) {
+    const schemaErrorMessage = getSchemaError(error);
+    res
+      .status(500)
+      .send({ message: schemaErrorMessage || "Something went wrong" });
+  }
+});
+
+router.delete("/api/edgeDevices/cameras/:id", async (req, res) => {
+  try {
+    const cameraID = req.params.id;
+    let { deviceID } = req.body;
+
+    if (!deviceID) {
+      return res.status(400).json({ message: "Device Id is required!" });
+    }
+
+    let existingDevice = await EdgeDevice.findOne({ deviceID });
+
+    if (!existingDevice) {
+      return res
+        .status(400)
+        .json({ message: "Device with this Id does not exist" });
+    }
+
+    if (
+      !existingDevice.cameras.find((cam) => cam._id.toString() === cameraID)
+    ) {
+      return res
+        .status(400)
+        .json({ message: `Camera with this id ${cameraID} does not exists` });
+    }
+
+    existingDevice.cameras = existingDevice.cameras.filter(
+      (cam) => cam._id.toString() !== cameraID
+    );
     console.log(existingDevice);
     await existingDevice.save();
     res.status(200).json(existingDevice);
