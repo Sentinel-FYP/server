@@ -14,10 +14,10 @@ module.exports = (io) => {
           console.log("No user connected!");
         }
         if (rooms[info.deviceID]?.deviceSocketId) {
-          io.to(rooms[info.deviceID].deviceSocketId).emit(
-            "cameras:added",
-            info
-          );
+          io.to(rooms[info.deviceID].deviceSocketId).emit("cameras:added", {
+            cameraID,
+            ...info,
+          });
         } else {
           console.log("No device connected!");
         }
