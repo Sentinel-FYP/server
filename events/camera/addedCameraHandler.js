@@ -7,11 +7,19 @@ module.exports = (io) => {
     console.log("Edge confirmed cameras addition", info);
 
     addCameraInDB(info)
-      .then(() => {
+      .then((cameraID) => {
         if (rooms[info.deviceID]?.userSocketId) {
           io.to(rooms[info.deviceID].userSocketId).emit("cameras:added", info);
         } else {
           console.log("No user connected!");
+        }
+        if (rooms[info.deviceID]?.deviceSocketId) {
+          io.to(rooms[info.deviceID].deviceSocketId).emit(
+            "cameras:added",
+            info
+          );
+        } else {
+          console.log("No device connected!");
         }
       })
       .catch((e) => console.log("Error adding cameras in DB:", e.message));
@@ -20,7 +28,15 @@ module.exports = (io) => {
 
 async function addCameraInDB(info) {
   try {
-    let { deviceID, cameraName, cameraIP, username, password, active, thumbnail } = info;
+    let {
+      deviceID,
+      cameraName,
+      cameraIP,
+      username,
+      password,
+      active,
+      thumbnail,
+    } = info;
 
     if (!deviceID || !cameraName || !cameraIP) {
       throw new Error("Camera fields are Incomplete");
@@ -33,7 +49,8 @@ async function addCameraInDB(info) {
     }
 
     let cameraExists =
-      existingDevice.cameras.filter((cam) => cam.cameraName === cameraName).length === 1
+      existingDevice.cameras.filter((cam) => cam.cameraName === cameraName)
+        .length === 1
         ? true
         : false;
 
@@ -41,10 +58,11 @@ async function addCameraInDB(info) {
       throw new Error("Camera with this Name already exists");
     }
 
+    const cameraID = new mongoose.Types.ObjectId();
     existingDevice.cameras = [
       ...existingDevice.cameras,
       {
-        _id: new mongoose.Types.ObjectId(),
+        _id: cameraID,
         cameraName,
         cameraIP,
         username,
@@ -54,6 +72,7 @@ async function addCameraInDB(info) {
       },
     ];
     await existingDevice.save();
+    return cameraID;
   } catch (error) {
     throw new Error(error.message);
   }
