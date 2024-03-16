@@ -1,6 +1,6 @@
 const { rooms } = require("../variables");
 const EdgeDevice = require("../../models/EdgeDevice");
-const mongoose = require("mongoose");
+const Camera = require("../../models/Camera");
 
 module.exports = (io) => {
   return (info) => {
@@ -47,32 +47,17 @@ async function addCameraInDB(info) {
     if (!existingDevice) {
       throw new Error("Device with this Id does not exist");
     }
-
-    let cameraExists =
-      existingDevice.cameras.filter((cam) => cam.cameraName === cameraName)
-        .length === 1
-        ? true
-        : false;
-
-    if (cameraExists) {
-      throw new Error("Camera with this Name already exists");
-    }
-
-    const cameraID = new mongoose.Types.ObjectId();
-    existingDevice.cameras = [
-      ...existingDevice.cameras,
-      {
-        _id: cameraID,
-        cameraName,
-        cameraIP,
-        username,
-        password,
-        active,
-        thumbnail,
-      },
-    ];
-    await existingDevice.save();
-    return cameraID;
+    const newCamera = await Camera.create({
+      cameraName,
+      cameraIP,
+      username,
+      password,
+      active,
+      thumbnail,
+      device: existingDevice._id,
+    });
+    console.log(newCamera);
+    return newCamera._id;
   } catch (error) {
     throw new Error(error.message);
   }

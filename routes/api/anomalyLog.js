@@ -1,6 +1,7 @@
 const express = require("express");
 const AnomalyLog = require("../../models/AnomalyLog");
 const EdgeDevice = require("../../models/EdgeDevice");
+const Camera = require("../../models/Camera");
 
 const multer = require("multer");
 const fs = require("fs");
@@ -15,36 +16,36 @@ const upload = multer({ dest: "/tmp/" });
 
 const router = express.Router();
 
-async function getLogs(req, res) {
-  try {
-    const fromDevice = req.params.deviceID;
-    if (!fromDevice)
-      return res.status(400).json({ message: "Device ID is required" });
+// async function getLogs(req, res) {
+//   try {
+//     const fromDevice = req.params.deviceID;
+//     if (!fromDevice)
+//       return res.status(400).json({ message: "Device ID is required" });
 
-    const anomalyLogs = await AnomalyLog.find({
-      fromDevice: fromDevice,
-    })
-      .populate("fromDevice")
-      .sort({ createdAt: -1 });
+//     const anomalyLogs = await AnomalyLog.find({
+//       fromDevice: fromDevice,
+//     })
+//       .populate(["fromDevice", "fromCamera"])
+//       .sort({ createdAt: -1 });
 
-    if (anomalyLogs.length === 0) return res.status(200).json([]);
-    if (anomalyLogs[0].fromDevice.owner != req.user.id)
-      return res.status(403).json({
-        message: "You are not authorized to access this device's logs",
-      });
+//     if (anomalyLogs.length === 0) return res.status(200).json([]);
+//     if (anomalyLogs[0].fromDevice.owner != req.user.id)
+//       return res.status(403).json({
+//         message: "You are not authorized to access this device's logs",
+//       });
 
-    res.status(200).json(anomalyLogs);
-  } catch (error) {
-    console.log(error);
-    const schemaErrorMessage = getSchemaError(error);
-    res
-      .status(500)
-      .send({ message: schemaErrorMessage || "Something went wrong" });
-  }
-}
+//     res.status(200).json(anomalyLogs);
+//   } catch (error) {
+//     console.log(error);
+//     const schemaErrorMessage = getSchemaError(error);
+//     res
+//       .status(500)
+//       .send({ message: schemaErrorMessage || "Something went wrong" });
+//   }
+// }
 
-router.get("/api/anomalyLog/:deviceID", getLogs);
-router.get("/api/edgeDevices/:deviceID/anomalyLogs", getLogs);
+// router.get("/api/anomalyLog/:deviceID", getLogs);
+// router.get("/api/edgeDevices/:deviceID/anomalyLogs", getLogs);
 
 router.get("/api/anomalyLogs", async (req, res) => {
   try {
@@ -52,6 +53,7 @@ router.get("/api/anomalyLogs", async (req, res) => {
 
     const anomalyLogs = await AnomalyLog.find({ fromDevice: { $in: devices } })
       .populate("fromDevice", "deviceID deviceName")
+      .populate("fromCamera", "-thumbnail")
       .sort({ createdAt: -1 });
     res.status(200).json(anomalyLogs);
   } catch (error) {
@@ -67,18 +69,17 @@ async function postLog(req, res) {
     let anomaly = req.body;
     let fromDevice = anomaly.fromDevice;
     let fromCamera = anomaly.fromCamera;
-    let thumbnail = req.files.thumbnail[0];
-    let video = req.files.video[0];
+    let thumbnail = req.files?.thumbnail[0];
+    let video = req.files?.video[0];
 
     if (!thumbnail)
       return res.status(400).json({ message: "Thumbnail is required!" });
     if (!video) return res.status(400).json({ message: "Video is required!" });
-    const camera = await EdgeDevice.findOne({
-      _id: fromDevice,
-      cameras: { $elemMatch: { _id: fromCamera } },
-    });
+    const camera = await Camera.findOne({ _id: fromCamera });
+
     if (!camera)
       return res.status(400).json({ message: "Camera does not exist!" });
+
     let videoStream = fs.readFileSync(video.path);
 
     // Upload Video to S3 Bucket
@@ -138,7 +139,8 @@ router.get("/api/anomalyLogs/:anomalyLogID", async (req, res) => {
     let anomalyLog = await AnomalyLog.findOne({
       _id: anomalyLogID,
     })
-      .populate("fromDevice")
+      .populate("fromDevice", "deviceID deviceName")
+      .populate("fromCamera", "-thumbnail")
       .lean();
 
     if (!anomalyLog)
