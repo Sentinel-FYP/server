@@ -33,6 +33,23 @@ router.get("/api/cameras", async (req, res) => {
   }
 });
 
+router.get("/api/cameras/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    let camera = await Camera.findOne({ _id: id });
+    if (!camera) {
+      return res.status(404).json({ message: "Camera not found" });
+    }
+    res.status(200).json(camera);
+  } catch (error) {
+    console.log(error);
+    const schemaErrorMessage = getSchemaError(error);
+    res
+      .status(500)
+      .send({ message: schemaErrorMessage || "Something went wrong" });
+  }
+});
+
 router.post("/api/cameras", async (req, res) => {
   try {
     let { deviceID, cameraName, cameraIP } = req.body;
