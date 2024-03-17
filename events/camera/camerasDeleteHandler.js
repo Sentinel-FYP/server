@@ -1,7 +1,7 @@
 const { rooms } = require("../variables");
 const Camera = require("../../models/Camera");
-
-module.exports = (io) => {
+const { sendErrror } = require("../utils/utils");
+module.exports = (io, socket) => {
   return (info) => {
     console.log("User initated cameras deletion", info);
     deleteCamera(info)
@@ -12,9 +12,13 @@ module.exports = (io) => {
           });
         } else {
           console.log("No device connected!");
+          sendErrror(io, socket?.id, "No device connected!");
         }
       })
-      .catch((e) => console.log("Error adding cameras in DB:", e.message));
+      .catch((e) => {
+        console.log("Error deleting cameras in DB:", e.message);
+        sendErrror(io, socket?.id, "Error deleting cameras in DB");
+      });
   };
 };
 

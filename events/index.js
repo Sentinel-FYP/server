@@ -8,6 +8,7 @@ const camerasDiscoveredHandler = require("./camera/camerasDiscoveredHandler");
 const newCameraHandler = require("./camera/newCameraHandler");
 const addCameraHandler = require("./camera/addCameraHandler");
 const deleteCameraHandler = require("./camera/camerasDeleteHandler");
+const reconnectCameraHandler = require("./camera/camerasReconnectHandler");
 const addedCameraHandler = require("./camera/addedCameraHandler");
 const updateHandler = require("./camera/updateHandler");
 const sendStreamEventHandler = require("./streaming/sendStreamEventHandler");
@@ -59,8 +60,12 @@ module.exports = (io) => {
     socket.on("cameras:add", addCameraHandler(io));
 
     // User will initiate delete camera event
-    // params: {cameraID}
-    socket.on("cameras:delete", deleteCameraHandler(io));
+    // params: {deviceID, cameraID}
+    socket.on("cameras:delete", deleteCameraHandler(io, socket));
+
+    // User will initiate reconnect camera event
+    // params: {deviceID, cameraID}
+    socket.on("cameras:reconnect", reconnectCameraHandler(io, socket));
 
     // Edge will initiate added camera event for confirmation
     // params: {deviceID, cameraName, cameraIP, username, password, active, thumbnail}
