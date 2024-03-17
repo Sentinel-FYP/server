@@ -7,7 +7,11 @@ const router = express.Router();
 
 router.get("/api/cameras", async (req, res) => {
   try {
-    const { deviceID } = req.query;
+    const { deviceID, offline } = req.query;
+    const { rooms } = require("../../events/variables");
+    if (!offline && !rooms[deviceID]) {
+      return res.status(500).json({ message: "Device is offline" });
+    }
     if (!deviceID) {
       return res.status(400).json({ message: "Device ID is required!" });
     }
