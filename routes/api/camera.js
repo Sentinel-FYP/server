@@ -98,4 +98,30 @@ router.delete("/api/cameras/:id", async (req, res) => {
   }
 });
 
+router.put("/api/cameras/:id", async (req, res) => {
+  try {
+    let receivedCamera = req.body;
+    let cameraID = req.params.id;
+
+    let camera = await Camera.findOne({ _id: cameraID });
+    if (!camera)
+      return res.status(404).json({ message: "Camera does not exist" });
+
+    let updatedCamera = await Camera.findOneAndUpdate(
+      { _id: cameraID },
+      receivedCamera,
+      {
+        new: true,
+      }
+    );
+    res.status(200).json(updatedCamera);
+  } catch (error) {
+    console.log(error);
+    const schemaErrorMessage = getSchemaError(error);
+    res
+      .status(500)
+      .send({ message: schemaErrorMessage || "Something went wrong" });
+  }
+});
+
 module.exports = router;
