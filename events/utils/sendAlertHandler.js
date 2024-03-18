@@ -1,5 +1,6 @@
 const EdgeDevice = require("../../models/EdgeDevice");
 const sendNotification = require("../../utils/onesignal");
+const { postNotification: storeNotification } = require("../../routes/api/notification");
 
 module.exports = (io) => {
   return (info) => {
@@ -24,6 +25,7 @@ async function sendAlertToUser(info) {
 
     const userId = existingDevice?.owner?._id;
 
+    storeNotification(existingDevice._id, notificationTitle, notificationMessage);
     sendNotification(notificationMessage, notificationTitle, userId);
   } catch (error) {
     console.log("Notification sending Error", error.message);

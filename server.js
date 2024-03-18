@@ -1,9 +1,19 @@
 const express = require("express");
+const httpModule = require("http");
+const socket = require("socket.io");
+const morgan = require("morgan");
+const mongoose = require("mongoose");
+
+const { router: notificationRouter } = require("./routes/api/notification");
+const edgeDeviceRouter = require("./routes/api/edgeDevice");
+const anomalyLogRouter = require("./routes/api/anomalyLog");
+const userRouter = require("./routes/api/user");
+const cameraRouter = require("./routes/api/camera");
+
 let app = express();
+const httpServer = httpModule.createServer(app);
 
-const httpServer = require("http").createServer(app);
-
-const io = require("socket.io")(httpServer, { cors: true });
+const io = socket(httpServer, { cors: true });
 // io.use(require("./middlewares/socketAuth"));
 require("./events")(io);
 
@@ -11,18 +21,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-app.use(
-  require("morgan")(process.env.NODE_ENV === "production" ? "combined" : "dev")
-);
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 app.use("/", require("./routes/api/auth"));
 
 const auth = require("./middlewares/auth");
 
-app.use("/", auth, require("./routes/api/edgeDevice"));
-app.use("/", auth, require("./routes/api/anomalyLog"));
-app.use("/", auth, require("./routes/api/user"));
-app.use("/", auth, require("./routes/api/camera"));
+app.use("/", auth, edgeDeviceRouter);
+app.use("/", auth, anomalyLogRouter);
+app.use("/", auth, notificationRouter);
+app.use("/", auth, userRouter);
+app.use("/", auth, cameraRouter);
 
 app.use((req, res, next) => {
   res.status(404).send("Not Found");
@@ -31,7 +40,6 @@ app.use((req, res, next) => {
 const MONGO_URI = process.env.MONGO_URI;
 const PORT = process.env.PORT || 5000;
 
-const mongoose = require("mongoose");
 mongoose
   .connect(MONGO_URI, { useNewUrlParser: true })
   .then(() => console.log("Connected to Mongo ...."))
