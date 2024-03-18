@@ -185,7 +185,7 @@ router.delete("/api/anomalyLogs", async (req, res) => {
 
     if (unaccessableLogIds.length)
       return res.status(404).json({
-        message: `You are unauthorized to access the log with id ${unaccessableLogIds[0]}`,
+        message: `You are unauthorized to modify the log with id ${unaccessableLogIds[0]}`,
       });
 
     let deletePromises = logsToDelete.map(async (log) => {
