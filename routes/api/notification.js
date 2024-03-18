@@ -72,6 +72,18 @@ router.delete("/api/notifications", async (req, res) => {
   }
 });
 
+router.delete("/api/notifications/clear", async (req, res) => {
+  try {
+    const devices = await EdgeDevice.find({ owner: req.user.id }).select("_id");
+    await Notification.deleteMany({ fromDevice: { $in: devices } });
+    res.status(200).json({ message: "Notifications Deleted Successfully!" });
+  } catch (error) {
+    console.log(error);
+    const schemaErrorMessage = getSchemaError(error);
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
+  }
+});
+
 async function postNotification(deviceID, title, message) {
   try {
     const notification = await Notification.create({ fromDevice: deviceID, title, message });
