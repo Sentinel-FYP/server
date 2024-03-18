@@ -118,7 +118,7 @@ router.get("/api/anomalyLogs/:anomalyLogID", async (req, res) => {
     let anomalyLog = await AnomalyLog.findOne({
       _id: anomalyLogID,
     })
-      .populate("fromDevice", "deviceID deviceName")
+      .populate("fromDevice", "deviceID deviceName owner")
       .populate("fromCamera", "-thumbnail")
       .lean();
 
