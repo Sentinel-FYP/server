@@ -2,6 +2,7 @@ const express = require("express");
 const AnomalyLog = require("../../models/AnomalyLog");
 const EdgeDevice = require("../../models/EdgeDevice");
 const Camera = require("../../models/Camera");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 const multer = require("multer");
 const fs = require("fs");
@@ -155,7 +156,7 @@ router.get("/api/anomalyLogs/:anomalyLogID", async (req, res) => {
 router.delete("/api/anomalyLogs", async (req, res) => {
   try {
     const anomalyLogIDs = req.body.anomalyLogIDs;
-    if (!anomalyLogIDs || anomalyLogIDs.length === 0)
+    if (!anomalyLogIDs || !anomalyLogIDs.length)
       return res.status(400).json({ message: "Anomaly Log IDs are required" });
 
     let unknownLogIds = [];
@@ -163,9 +164,14 @@ router.delete("/api/anomalyLogs", async (req, res) => {
     let logsToDelete = [];
 
     let logsPromises = anomalyLogIDs.map(async (anomalyLogId) => {
+      if (!ObjectId.isValid(anomalyLogId)) {
+        unknownLogIds.push(anomalyLogId);
+        return;
+      }
+
       let anomalyLog = await AnomalyLog.findOne({
         _id: anomalyLogId,
-      }).populate("fromDevice", "deviceID deviceName");
+      }).populate("fromDevice", "deviceID deviceName owner");
 
       if (!anomalyLog) unknownLogIds.push(anomalyLogId);
       else if (anomalyLog.fromDevice.owner != req.user.id) unaccessableLogIds.push(anomalyLogId);
@@ -190,7 +196,6 @@ router.delete("/api/anomalyLogs", async (req, res) => {
 
       try {
         await s3.headObject(params).promise();
-
         try {
           await s3.deleteObject(params).promise();
           await AnomalyLog.deleteOne({ _id: log.anomalyLogId });
