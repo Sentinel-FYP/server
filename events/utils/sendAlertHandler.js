@@ -13,7 +13,7 @@ async function sendAlertToUser(info) {
     let { deviceID, notificationTitle, notificationMessage } = info;
 
     if (!deviceID) {
-      throw new Error("Device ID and Camera Name is required!");
+      throw new Error("Device ID is required!");
     }
 
     let existingDevice = await EdgeDevice.findOne({ deviceID }).populate("owner");
