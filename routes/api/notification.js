@@ -64,7 +64,7 @@ router.delete("/api/notifications", async (req, res) => {
 
     await Notification.deleteMany({ _id: { $in: notificationsToDelete } });
 
-    res.status(200).json({ message: "Logs Deleted Successfully!" });
+    res.status(200).json({ message: "Notifications Deleted Successfully!" });
   } catch (error) {
     console.log(error);
     const schemaErrorMessage = getSchemaError(error);
