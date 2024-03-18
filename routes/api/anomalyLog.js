@@ -46,13 +46,52 @@ const router = express.Router();
 
 router.get("/api/anomalyLogs", async (req, res) => {
   try {
+    const pageNumber = req.params.pageNumber || 1;
+    const logsPerPage = req.params.logsPerPage || 10;
+    const skipCount = (pageNumber - 1) * logsPerPage;
+
     const devices = await EdgeDevice.find({ owner: req.user.id }).select("_id");
 
     const anomalyLogs = await AnomalyLog.find({ fromDevice: { $in: devices } })
+      .skip(skipCount)
+      .limit(logsPerPage)
       .populate("fromDevice", "deviceID deviceName")
       .populate("fromCamera", "-thumbnail")
       .sort({ createdAt: -1 });
-    res.status(200).json(anomalyLogs);
+
+    const today = new Date();
+
+    today.setHours(0);
+    today.setMinutes(0);
+    today.setSeconds(0);
+    today.setMilliseconds(0);
+
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const previousWeek = new Date(yesterday);
+    previousWeek.setDate(yesterday.getDate() - 7);
+
+    let logs = {
+      today: [],
+      yesterday: [],
+      previousWeek: [],
+      older: [],
+    };
+
+    anomalyLogs.forEach((log) => {
+      if (log.createdAt >= today) {
+        logs.today.push(log);
+      } else if (log.createdAt >= yesterday && log.createdAt < today) {
+        logs.yesterday.push(log);
+      } else if (log.createdAt >= previousWeek && log.createdAt < yesterday) {
+        logs.previousWeek.push(log);
+      } else if (log.createdAt < previousWeek) {
+        logs.older.push(log);
+      }
+    });
+
+    res.status(200).json(logs);
   } catch (error) {
     console.log(error);
     const schemaErrorMessage = getSchemaError(error);
