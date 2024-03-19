@@ -52,7 +52,7 @@ router.get("/api/anomalyLogs", async (req, res) => {
     const devices = await EdgeDevice.find({ owner: req.user.id }).select("_id");
 
     const anomalyLogs = await AnomalyLog.find({ fromDevice: { $in: devices } })
-      .populate("fromDevice", "deviceID deviceName")
+      .populate("fromDevice")
       .populate("fromCamera", "-thumbnail")
       .sort({ createdAt: -1 });
     res.status(200).json(anomalyLogs);
@@ -139,7 +139,7 @@ router.get("/api/anomalyLogs/:anomalyLogID", async (req, res) => {
     let anomalyLog = await AnomalyLog.findOne({
       _id: anomalyLogID,
     })
-      .populate("fromDevice", "deviceID deviceName")
+      .populate("fromDevice")
       .populate("fromCamera", "-thumbnail")
       .lean();
 
