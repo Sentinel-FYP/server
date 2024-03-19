@@ -46,8 +46,8 @@ const router = express.Router();
 
 router.get("/api/anomalyLogs", async (req, res) => {
   try {
-    const pageNumber = req.params.pageNumber || 1;
-    const logsPerPage = req.params.logsPerPage || 10;
+    const pageNumber = req.query.pageNumber || 1;
+    const logsPerPage = req.query.logsPerPage || 10;
     const skipCount = (pageNumber - 1) * logsPerPage;
 
     const devices = await EdgeDevice.find({ owner: req.user.id }).select("_id");
