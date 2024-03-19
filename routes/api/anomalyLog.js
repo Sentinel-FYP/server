@@ -59,7 +59,7 @@ router.get("/api/anomalyLogs", async (req, res) => {
     const anomalyLogs = await AnomalyLog.find({ fromDevice: { $in: devices } })
       .skip(skipCount)
       .limit(logsPerPage)
-      .populate("fromDevice", "deviceID deviceName")
+      .populate("fromDevice")
       .populate("fromCamera", "-thumbnail")
       .sort({ createdAt: -1 });
 
@@ -169,7 +169,7 @@ router.get("/api/anomalyLogs/:anomalyLogID", async (req, res) => {
     let anomalyLog = await AnomalyLog.findOne({
       _id: anomalyLogID,
     })
-      .populate("fromDevice", "deviceID deviceName owner")
+      .populate("fromDevice")
       .populate("fromCamera", "-thumbnail")
       .lean();
 
