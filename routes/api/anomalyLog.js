@@ -46,13 +46,52 @@ const router = express.Router();
 
 router.get("/api/anomalyLogs", async (req, res) => {
   try {
+    const pageNumber = req.query.pageNumber || 1;
+    const logsPerPage = req.query.logsPerPage || 10;
+    const skipCount = (pageNumber - 1) * logsPerPage;
+
     const devices = await EdgeDevice.find({ owner: req.user.id }).select("_id");
 
     const anomalyLogs = await AnomalyLog.find({ fromDevice: { $in: devices } })
+      .skip(skipCount)
+      .limit(logsPerPage)
       .populate("fromDevice", "deviceID deviceName")
       .populate("fromCamera", "-thumbnail")
       .sort({ createdAt: -1 });
-    res.status(200).json(anomalyLogs);
+
+    const today = new Date();
+
+    today.setHours(0);
+    today.setMinutes(0);
+    today.setSeconds(0);
+    today.setMilliseconds(0);
+
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const previousWeek = new Date(yesterday);
+    previousWeek.setDate(yesterday.getDate() - 7);
+
+    let logs = {
+      today: [],
+      yesterday: [],
+      previousWeek: [],
+      older: [],
+    };
+
+    anomalyLogs.forEach((log) => {
+      if (log.createdAt >= today) {
+        logs.today.push(log);
+      } else if (log.createdAt >= yesterday && log.createdAt < today) {
+        logs.yesterday.push(log);
+      } else if (log.createdAt >= previousWeek && log.createdAt < yesterday) {
+        logs.previousWeek.push(log);
+      } else if (log.createdAt < previousWeek) {
+        logs.older.push(log);
+      }
+    });
+
+    res.status(200).json(logs);
   } catch (error) {
     console.log(error);
     const schemaErrorMessage = getSchemaError(error);
@@ -60,66 +99,54 @@ router.get("/api/anomalyLogs", async (req, res) => {
   }
 });
 
-async function postLog(req, res) {
-  try {
-    let anomaly = req.body;
-    let fromDevice = anomaly.fromDevice;
-    let fromCamera = anomaly.fromCamera;
-    let thumbnail = req.files?.thumbnail[0];
-    let video = req.files?.video[0];
-
-    if (!thumbnail) return res.status(400).json({ message: "Thumbnail is required!" });
-    if (!video) return res.status(400).json({ message: "Video is required!" });
-    const camera = await Camera.findOne({ _id: fromCamera });
-
-    if (!camera) return res.status(400).json({ message: "Camera does not exist!" });
-
-    let videoStream = fs.readFileSync(video.path);
-
-    // Upload Video to S3 Bucket
-    const params = {
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
-      Key: fromDevice + "/" + video.originalname,
-      Body: videoStream,
-      ContentType: video.mimetype,
-    };
-
-    const s3UploadResponse = await s3.upload(params).promise();
-    anomaly.videoUri = s3UploadResponse.Key;
-
-    let image = fs.readFileSync(thumbnail.path, "base64");
-    anomaly.thumbnail = image;
-
-    // Deleting the file from FileSystem
-    fs.rmSync(thumbnail.path);
-    fs.rmSync(video.path);
-
-    const anomalyLog = await AnomalyLog.create(req.body);
-    res.status(200).json(anomalyLog);
-  } catch (error) {
-    console.log(error);
-    const schemaErrorMessage = getSchemaError(error);
-    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
-  }
-}
-
-// router.post("/api/anomalyLog", upload.single("thumbnail"), async (req, res) => {
-router.post(
-  "/api/anomalyLog",
-  upload.fields([
-    { name: "thumbnail", maxCount: 1 },
-    { name: "video", maxCount: 1 },
-  ]),
-  postLog
-);
-
 router.post(
   "/api/anomalyLogs",
   upload.fields([
     { name: "thumbnail", maxCount: 1 },
     { name: "video", maxCount: 1 },
   ]),
-  postLog
+  async function postLog(req, res) {
+    try {
+      let anomaly = req.body;
+      let fromDevice = anomaly.fromDevice;
+      let fromCamera = anomaly.fromCamera;
+      let thumbnail = req.files?.thumbnail[0];
+      let video = req.files?.video[0];
+
+      if (!thumbnail) return res.status(400).json({ message: "Thumbnail is required!" });
+      if (!video) return res.status(400).json({ message: "Video is required!" });
+      const camera = await Camera.findOne({ _id: fromCamera });
+
+      if (!camera) return res.status(400).json({ message: "Camera does not exist!" });
+
+      let videoStream = fs.readFileSync(video.path);
+
+      // Upload Video to S3 Bucket
+      const params = {
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
+        Key: fromDevice + "/" + video.originalname,
+        Body: videoStream,
+        ContentType: video.mimetype,
+      };
+
+      const s3UploadResponse = await s3.upload(params).promise();
+      anomaly.videoUri = s3UploadResponse.Key;
+
+      let image = fs.readFileSync(thumbnail.path, "base64");
+      anomaly.thumbnail = image;
+
+      // Deleting the file from FileSystem
+      fs.rmSync(thumbnail.path);
+      fs.rmSync(video.path);
+
+      const anomalyLog = await AnomalyLog.create(req.body);
+      res.status(200).json(anomalyLog);
+    } catch (error) {
+      console.log(error);
+      const schemaErrorMessage = getSchemaError(error);
+      res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
+    }
+  }
 );
 
 router.get("/api/anomalyLogs/:anomalyLogID", async (req, res) => {
@@ -130,7 +157,7 @@ router.get("/api/anomalyLogs/:anomalyLogID", async (req, res) => {
     let anomalyLog = await AnomalyLog.findOne({
       _id: anomalyLogID,
     })
-      .populate("fromDevice", "deviceID deviceName")
+      .populate("fromDevice", "deviceID deviceName owner")
       .populate("fromCamera", "-thumbnail")
       .lean();
 
