@@ -7,11 +7,7 @@ const ObjectId = require("mongoose").Types.ObjectId;
 const multer = require("multer");
 const fs = require("fs");
 const getSchemaError = require("../../utils/schemaError");
-const {
-  s3,
-  createPresignedUrl,
-  createCloudFrontURL,
-} = require("../../utils/aws");
+const { s3, createPresignedUrl, createCloudFrontURL } = require("../../utils/aws");
 
 const upload = multer({ dest: "/tmp/" });
 
@@ -76,22 +72,29 @@ router.get("/api/anomalyLogs", async (req, res) => {
     const previousWeek = new Date(yesterday);
     previousWeek.setDate(yesterday.getDate() - 7);
 
-    let logs = {
-      today: [],
-      yesterday: [],
-      previousWeek: [],
-      older: [],
-    };
+    let logs = [
+      { title: "today", data: [] },
+      { title: "yesterday", data: [] },
+      { title: "previousWeek", data: [] },
+      { title: "older", data: [] },
+    ];
+
+    // let logs = {
+    //   today: [],
+    //   yesterday: [],
+    //   previousWeek: [],
+    //   older: [],
+    // };
 
     anomalyLogs.forEach((log) => {
       if (log.createdAt >= today) {
-        logs.today.push(log);
+        logs[0].data.push(log);
       } else if (log.createdAt >= yesterday && log.createdAt < today) {
-        logs.yesterday.push(log);
+        logs[1].data.push(log);
       } else if (log.createdAt >= previousWeek && log.createdAt < yesterday) {
-        logs.previousWeek.push(log);
+        logs[2].data.push(log);
       } else if (log.createdAt < previousWeek) {
-        logs.older.push(log);
+        logs[3].data.push(log);
       }
     });
 
@@ -99,9 +102,7 @@ router.get("/api/anomalyLogs", async (req, res) => {
   } catch (error) {
     console.log(error);
     const schemaErrorMessage = getSchemaError(error);
-    res
-      .status(500)
-      .send({ message: schemaErrorMessage || "Something went wrong" });
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 
@@ -119,14 +120,11 @@ router.post(
       let thumbnail = req.files?.thumbnail[0];
       let video = req.files?.video[0];
 
-      if (!thumbnail)
-        return res.status(400).json({ message: "Thumbnail is required!" });
-      if (!video)
-        return res.status(400).json({ message: "Video is required!" });
+      if (!thumbnail) return res.status(400).json({ message: "Thumbnail is required!" });
+      if (!video) return res.status(400).json({ message: "Video is required!" });
       const camera = await Camera.findOne({ _id: fromCamera });
 
-      if (!camera)
-        return res.status(400).json({ message: "Camera does not exist!" });
+      if (!camera) return res.status(400).json({ message: "Camera does not exist!" });
 
       let videoStream = fs.readFileSync(video.path);
 
@@ -153,9 +151,7 @@ router.post(
     } catch (error) {
       console.log(error);
       const schemaErrorMessage = getSchemaError(error);
-      res
-        .status(500)
-        .send({ message: schemaErrorMessage || "Something went wrong" });
+      res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
     }
   }
 );
@@ -163,8 +159,7 @@ router.post(
 router.get("/api/anomalyLogs/:anomalyLogID", async (req, res) => {
   try {
     const anomalyLogID = req.params.anomalyLogID;
-    if (!anomalyLogID)
-      return res.status(400).json({ message: "Anomaly Log ID is required" });
+    if (!anomalyLogID) return res.status(400).json({ message: "Anomaly Log ID is required" });
 
     let anomalyLog = await AnomalyLog.findOne({
       _id: anomalyLogID,
@@ -174,9 +169,7 @@ router.get("/api/anomalyLogs/:anomalyLogID", async (req, res) => {
       .lean();
 
     if (!anomalyLog)
-      return res
-        .status(404)
-        .json({ message: "Anomaly Log with this ID does not exist!" });
+      return res.status(404).json({ message: "Anomaly Log with this ID does not exist!" });
     if (anomalyLog.fromDevice.owner != req.user.id)
       return res.status(403).json({
         message: "You are not authorized to access this device's logs",
@@ -190,9 +183,7 @@ router.get("/api/anomalyLogs/:anomalyLogID", async (req, res) => {
   } catch (error) {
     console.log(error);
     const schemaErrorMessage = getSchemaError(error);
-    res
-      .status(500)
-      .send({ message: schemaErrorMessage || "Something went wrong" });
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 
@@ -217,17 +208,14 @@ router.delete("/api/anomalyLogs", async (req, res) => {
       }).populate("fromDevice", "deviceID deviceName owner");
 
       if (!anomalyLog) unknownLogIds.push(anomalyLogId);
-      else if (anomalyLog.fromDevice.owner != req.user.id)
-        unaccessableLogIds.push(anomalyLogId);
+      else if (anomalyLog.fromDevice.owner != req.user.id) unaccessableLogIds.push(anomalyLogId);
       else logsToDelete.push({ anomalyLogId, key: anomalyLog.videoUri });
     });
 
     await Promise.all(logsPromises);
 
     if (unknownLogIds.length)
-      return res
-        .status(404)
-        .json({ message: `Log with id ${unknownLogIds[0]} does not exist` });
+      return res.status(404).json({ message: `Log with id ${unknownLogIds[0]} does not exist` });
 
     if (unaccessableLogIds.length)
       return res.status(404).json({
@@ -256,18 +244,14 @@ router.delete("/api/anomalyLogs", async (req, res) => {
     try {
       await Promise.all(deletePromises);
     } catch (e) {
-      return res
-        .status(500)
-        .json({ message: `Error while deleting anomaly log ${e.message}` });
+      return res.status(500).json({ message: `Error while deleting anomaly log ${e.message}` });
     }
 
     res.status(200).json({ message: "Logs Deleted Successfully!" });
   } catch (error) {
     console.log(error);
     const schemaErrorMessage = getSchemaError(error);
-    res
-      .status(500)
-      .send({ message: schemaErrorMessage || "Something went wrong" });
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 
