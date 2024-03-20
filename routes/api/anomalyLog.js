@@ -7,43 +7,31 @@ const ObjectId = require("mongoose").Types.ObjectId;
 const multer = require("multer");
 const fs = require("fs");
 const getSchemaError = require("../../utils/schemaError");
-const { s3, createPresignedUrl, createCloudFrontURL } = require("../../utils/aws");
+const { s3, createCloudFrontURL } = require("../../utils/aws");
 
 const upload = multer({ dest: "/tmp/" });
 
 const router = express.Router();
 
-// async function getLogs(req, res) {
-//   try {
-//     const fromDevice = req.params.deviceID;
-//     if (!fromDevice)
-//       return res.status(400).json({ message: "Device ID is required" });
+router.get("/api/anomalyLogs", async (req, res) => {
+  try {
+    const devices = await EdgeDevice.find({ owner: req.user.id }).select("_id");
 
-//     const anomalyLogs = await AnomalyLog.find({
-//       fromDevice: fromDevice,
-//     })
-//       .populate(["fromDevice", "fromCamera"])
-//       .sort({ createdAt: -1 });
+    const anomalyLogs = await AnomalyLog.find({ fromDevice: { $in: devices } })
+      .populate("fromDevice")
+      .populate("fromCamera", "-thumbnail")
+      .sort({ createdAt: -1 });
 
-//     if (anomalyLogs.length === 0) return res.status(200).json([]);
-//     if (anomalyLogs[0].fromDevice.owner != req.user.id)
-//       return res.status(403).json({
-//         message: "You are not authorized to access this device's logs",
-//       });
+    res.status(200).json(anomalyLogs);
+  } catch (error) {
+    console.log(error);
+    const schemaErrorMessage = getSchemaError(error);
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
+  }
+});
 
-//     res.status(200).json(anomalyLogs);
-//   } catch (error) {
-//     console.log(error);
-//     const schemaErrorMessage = getSchemaError(error);
-//     res
-//       .status(500)
-//       .send({ message: schemaErrorMessage || "Something went wrong" });
-//   }
-// }
-
-// router.get("/api/anomalyLog/:deviceID", getLogs);
-// router.get("/api/edgeDevices/:deviceID/anomalyLogs", getLogs);
-
+// Version 2 with pagination
+/*
 router.get("/api/anomalyLogs", async (req, res) => {
   try {
     const pageNumber = req.query.pageNumber || 1;
@@ -79,13 +67,6 @@ router.get("/api/anomalyLogs", async (req, res) => {
       { title: "older", data: [] },
     ];
 
-    // let logs = {
-    //   today: [],
-    //   yesterday: [],
-    //   previousWeek: [],
-    //   older: [],
-    // };
-
     anomalyLogs.forEach((log) => {
       if (log.createdAt >= today) {
         logs[0].data.push(log);
@@ -105,6 +86,7 @@ router.get("/api/anomalyLogs", async (req, res) => {
     res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
+*/
 
 router.post(
   "/api/anomalyLogs",
