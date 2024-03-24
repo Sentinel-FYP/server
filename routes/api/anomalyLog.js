@@ -13,25 +13,24 @@ const upload = multer({ dest: "/tmp/" });
 
 const router = express.Router();
 
-router.get("/api/anomalyLogs", async (req, res) => {
-  try {
-    const devices = await EdgeDevice.find({ owner: req.user.id }).select("_id");
+// router.get("/api/anomalyLogs", async (req, res) => {
+//   try {
+//     const devices = await EdgeDevice.find({ owner: req.user.id }).select("_id");
 
-    const anomalyLogs = await AnomalyLog.find({ fromDevice: { $in: devices } })
-      .populate("fromDevice")
-      .populate("fromCamera", "-thumbnail")
-      .sort({ createdAt: -1 });
+//     const anomalyLogs = await AnomalyLog.find({ fromDevice: { $in: devices } })
+//       .populate("fromDevice")
+//       .populate("fromCamera", "-thumbnail")
+//       .sort({ createdAt: -1 });
 
-    res.status(200).json(anomalyLogs);
-  } catch (error) {
-    console.log(error);
-    const schemaErrorMessage = getSchemaError(error);
-    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
-  }
-});
+//     res.status(200).json(anomalyLogs);
+//   } catch (error) {
+//     console.log(error);
+//     const schemaErrorMessage = getSchemaError(error);
+//     res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
+//   }
+// });
 
 // Version 2 with pagination
-/*
 router.get("/api/anomalyLogs", async (req, res) => {
   try {
     const pageNumber = req.query.pageNumber || 1;
@@ -86,7 +85,6 @@ router.get("/api/anomalyLogs", async (req, res) => {
     res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
-*/
 
 router.post(
   "/api/anomalyLogs",
