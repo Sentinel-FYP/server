@@ -60,10 +60,10 @@ router.get("/api/anomalyLogs", async (req, res) => {
     previousWeek.setDate(yesterday.getDate() - 7);
 
     let logs = [
-      { title: "today", data: [] },
-      { title: "yesterday", data: [] },
-      { title: "previousWeek", data: [] },
-      { title: "older", data: [] },
+      { title: "Today", data: [] },
+      { title: "Yesterday", data: [] },
+      { title: "Previous Week", data: [] },
+      { title: "Older", data: [] },
     ];
 
     anomalyLogs.forEach((log) => {
