@@ -10,13 +10,51 @@ const router = express.Router();
 
 router.get("/api/notifications", async (req, res) => {
   try {
+    const pageNumber = req.query.pageNumber || 1;
+    const logsPerPage = req.query.logsPerPage || 10;
+    const skipCount = (pageNumber - 1) * logsPerPage;
+
     const devices = await EdgeDevice.find({ owner: req.user.id }).select("_id");
 
     const notifications = await Notification.find({ fromDevice: { $in: devices } })
-      .populate("fromDevice", "deviceID deviceName")
-      // .populate("fromCamera", "-thumbnail")
+      .skip(skipCount)
+      .limit(logsPerPage)
+      .populate("fromDevice")
       .sort({ createdAt: -1 });
-    res.status(200).json(notifications);
+
+    const today = new Date();
+
+    today.setHours(0);
+    today.setMinutes(0);
+    today.setSeconds(0);
+    today.setMilliseconds(0);
+
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const previousWeek = new Date(yesterday);
+    previousWeek.setDate(yesterday.getDate() - 7);
+
+    let groupedNotifications = [
+      { title: "Today", data: [] },
+      { title: "Yesterday", data: [] },
+      { title: "Previous Week", data: [] },
+      { title: "Older", data: [] },
+    ];
+
+    notifications.forEach((log) => {
+      if (log.createdAt >= today) {
+        groupedNotifications[0].data.push(log);
+      } else if (log.createdAt >= yesterday && log.createdAt < today) {
+        groupedNotifications[1].data.push(log);
+      } else if (log.createdAt >= previousWeek && log.createdAt < yesterday) {
+        groupedNotifications[2].data.push(log);
+      } else if (log.createdAt < previousWeek) {
+        groupedNotifications[3].data.push(log);
+      }
+    });
+
+    res.status(200).json(groupedNotifications);
   } catch (error) {
     console.log(error);
     const schemaErrorMessage = getSchemaError(error);

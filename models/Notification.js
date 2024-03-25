@@ -14,6 +14,11 @@ let modelSchema = mongoose.Schema(
     //   ref: "Camera",
     //   required: true,
     // },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+      expires: 2592000,
+    },
   },
   { timestamps: true }
 );
