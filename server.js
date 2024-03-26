@@ -24,6 +24,7 @@ app.use(express.static("public"));
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 app.use("/", require("./routes/api/auth"));
+app.use("/", require("./routes/api/otp"));
 
 const auth = require("./middlewares/auth");
 
