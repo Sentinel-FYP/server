@@ -41,9 +41,17 @@ router.get("/api/otp", async (req, res) => {
     `Here is your OTP ${OTPRecord.otp} . This OTP will expire in 1 hour.` +
     "\n\nRegards Team Sentinel";
 
-  sendEmail(user.email, "Sentinel OTP", textToSend);
-
-  res.status(200).json({ message: "OTP sent Successfully" });
+  try {
+    let emailResponse = await sendEmail(user.email, "Sentinel OTP", textToSend);
+    console.log("Email Response =>", emailResponse);
+    res.status(200).json({ message: "OTP sent Successfully" });
+  } catch (error) {
+    console.log(error);
+    const schemaErrorMessage = getSchemaError(error);
+    res
+      .status(500)
+      .send({ message: schemaErrorMessage || error.message || "Something went wrong" });
+  }
 });
 
 router.post("/api/otp/verify/email", async (req, res) => {

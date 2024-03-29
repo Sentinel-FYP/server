@@ -9,19 +9,13 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendEmail = (email, subject, text) => {
-  console.log(email, subject, text);
-  transporter
-    .sendMail({
-      from: '"Team Sentinel" ' + process.env.GMAIL, // sender address
-      to: email, // list of receivers
-      subject: subject, // Subject line
-      text: text, // plain text body
-    })
-    .then((info) => {
-      console.log("Email => ", { info });
-    })
-    .catch((e) => console.log("Email Error", e));
+const sendEmail = async (email, subject, text) => {
+  return transporter.sendMail({
+    from: '"Team Sentinel" ' + process.env.GMAIL, // sender address
+    to: email, // list of receivers
+    subject: subject, // Subject line
+    text: text, // plain text body
+  });
 };
 
 module.exports = sendEmail;
