@@ -40,6 +40,7 @@ router.put("/api/users/:userID", async (req, res) => {
       email: updatedUser.email,
       firstName: updatedUser.firstName,
       lastName: updatedUser.lastName,
+      isEmailVerified: updatedUser.isEmailVerified,
     };
 
     res.status(200).json({ user: userData });
