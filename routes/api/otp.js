@@ -6,12 +6,14 @@ const User = require("../../models/User");
 const OTP = require("../../models/OTP");
 const getSchemaError = require("../../utils/schemaError");
 
+const sendEmail = require("../../utils/email");
+
 dotenv.config();
 
 const router = express.Router();
 
-router.post("/api/otp/send", async (req, res) => {
-  let { email } = req.body;
+router.get("/api/otp", async (req, res) => {
+  let { email } = req.query;
 
   if (!email) {
     return res.status(400).json({ message: "Email is required!" });
@@ -24,19 +26,20 @@ router.post("/api/otp/send", async (req, res) => {
       message: "User with this email does not exist",
     });
 
-  let OTP = await OTP.findOne({ userId: user._id });
+  let OTPRecord = await OTP.findOne({ userId: user._id });
   let randomOtp = Math.floor(Math.random() * 999999);
-  if (!OTP) {
-    OTP = await new OTP({
+  if (!OTPRecord) {
+    OTPRecord = await new OTP({
       userId: user._id,
       otp: randomOtp,
     }).save();
   }
 
-  console.log("Otp:", OTP.otp);
+  console.log("Otp:", OTPRecord.otp);
 
   const textToSend =
-    `Here is your OTP ${OTP.otp} . This link will expire in 1 hour.` + "\n\nRegards Team Sentinel";
+    `Here is your OTP ${OTPRecord.otp} . This OTP will expire in 1 hour.` +
+    "\n\nRegards Team Sentinel";
 
   sendEmail(user.email, "Sentinel OTP", textToSend);
 
@@ -104,3 +107,5 @@ router.post("/api/otp/reset/password", async (req, res) => {
     res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
+
+module.exports = router;

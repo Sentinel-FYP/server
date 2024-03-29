@@ -9,6 +9,8 @@ const edgeDeviceRouter = require("./routes/api/edgeDevice");
 const anomalyLogRouter = require("./routes/api/anomalyLog");
 const userRouter = require("./routes/api/user");
 const cameraRouter = require("./routes/api/camera");
+const otpRouter = require("./routes/api/otp");
+const authRouter = require("./routes/api/auth");
 
 let app = express();
 const httpServer = httpModule.createServer(app);
@@ -23,8 +25,8 @@ app.use(express.static("public"));
 
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-app.use("/", require("./routes/api/auth"));
-app.use("/", require("./routes/api/otp"));
+app.use("/", authRouter);
+app.use("/", otpRouter);
 
 const auth = require("./middlewares/auth");
 
