@@ -34,6 +34,7 @@ async function addCameraInDB(info) {
       cameraIP,
       username,
       password,
+      path,
       active,
       thumbnail,
     } = info;
@@ -52,6 +53,7 @@ async function addCameraInDB(info) {
       cameraIP,
       username,
       password,
+      path,
       active,
       thumbnail,
       device: existingDevice._id,
