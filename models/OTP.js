@@ -10,6 +10,10 @@ const tokenSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
+  token: {
+    type: String,
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

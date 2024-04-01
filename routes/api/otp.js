@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const dotenv = require("dotenv");
+const crypto = require("crypto");
 
 const User = require("../../models/User");
 const OTP = require("../../models/OTP");
@@ -32,10 +33,11 @@ router.get("/api/otp", async (req, res) => {
     OTPRecord = await new OTP({
       userId: user._id,
       otp: randomOtp,
+      token: crypto.randomBytes(32).toString("hex"),
     }).save();
   }
 
-  console.log("Otp:", OTPRecord.otp);
+  console.log("Otp:", OTPRecord);
 
   const textToSend =
     `Here is your OTP ${OTPRecord.otp} . This OTP will expire in 1 hour.` +
@@ -83,12 +85,39 @@ router.post("/api/otp/verify/email", async (req, res) => {
   }
 });
 
+router.post("/api/otp/verify", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "User Email and OTP is needed" });
+    }
+
+    const user = await User.findOne({ email: email });
+    if (!user) return res.status(400).json({ message: "Invalid User Email" });
+
+    const existingOTP = await OTP.findOne({
+      userId: user._id,
+      otp: otp,
+    });
+    if (!existingOTP) return res.status(400).json({ message: "Invalid OTP or expired" });
+
+    res
+      .status(200)
+      .json({ message: "OTP verified sucessfully", token: existingOTP.token, userId: user._id });
+  } catch (error) {
+    console.log(error);
+    const schemaErrorMessage = getSchemaError(error);
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
+  }
+});
+
 router.post("/api/otp/reset/password", async (req, res) => {
   try {
-    let { userId, otp, password } = req.body;
+    let { userId, token, password } = req.body;
 
-    if (!password || !userId || !otp) {
-      return res.status(400).json({ message: "User Id, OTP and Password is needed" });
+    if (!password || !userId || !token) {
+      return res.status(400).json({ message: "User Id, Token and Password is needed" });
     }
 
     if (password.length < 8)
@@ -99,9 +128,9 @@ router.post("/api/otp/reset/password", async (req, res) => {
 
     const existingOTP = await OTP.findOne({
       userId: user._id,
-      otp: otp,
+      token: token,
     });
-    if (!existingOTP) return res.status(400).json({ message: "Invalid OTP or expired" });
+    if (!existingOTP) return res.status(400).json({ message: "Invalid Token or expired" });
 
     const salt = await bcrypt.genSalt(parseInt(process.env.SALT_FACTOR));
     user.password = await bcrypt.hash(password, salt);
