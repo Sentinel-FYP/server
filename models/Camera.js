@@ -5,7 +5,6 @@ let modelSchema = mongoose.Schema({
   cameraIP: { type: String, required: true },
   username: { type: String, default: "" },
   password: { type: String, default: "" },
-  path: { type: String, default: "" },
   thumbnail: { type: String },
   active: { type: Boolean, default: true },
   device: {
