@@ -64,6 +64,7 @@ module.exports = (io) => {
     // params: {deviceID, cameraID}
     socket.on("cameras:delete", deleteCameraHandler(io, socket));
 
+    // TO DO -> Remove this event if edge will not trigger it.
     // Edge will initiate cameras deleted event
     // params: {deviceID, cameraID}
     socket.on("cameras:deleted", deletedCameraHandler(io, socket));

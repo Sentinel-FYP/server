@@ -22,14 +22,12 @@ router.get("/api/cameras", async (req, res) => {
       return res.status(404).json({ message: "Device not found" });
     }
 
-    let cameras = await Camera.find({ device: edgeDevice._id });
+    let cameras = await Camera.find({ device: edgeDevice._id, deleted: false });
     res.status(200).json(cameras);
   } catch (error) {
     console.log(error);
     const schemaErrorMessage = getSchemaError(error);
-    res
-      .status(500)
-      .send({ message: schemaErrorMessage || "Something went wrong" });
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 
@@ -44,9 +42,7 @@ router.get("/api/cameras/:id", async (req, res) => {
   } catch (error) {
     console.log(error);
     const schemaErrorMessage = getSchemaError(error);
-    res
-      .status(500)
-      .send({ message: schemaErrorMessage || "Something went wrong" });
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 
@@ -55,17 +51,13 @@ router.post("/api/cameras", async (req, res) => {
     let { deviceID, cameraName, cameraIP } = req.body;
 
     if (!deviceID || !cameraName || !cameraIP) {
-      return res
-        .status(400)
-        .json({ message: "Device Id, Camera Name and Camera IP is required!" });
+      return res.status(400).json({ message: "Device Id, Camera Name and Camera IP is required!" });
     }
 
     let existingDevice = await EdgeDevice.findOne({ deviceID });
 
     if (!existingDevice) {
-      return res
-        .status(400)
-        .json({ message: "Device with this Id does not exist" });
+      return res.status(400).json({ message: "Device with this Id does not exist" });
     }
     const newCamera = await Camera.create({
       ...req.body,
@@ -75,9 +67,7 @@ router.post("/api/cameras", async (req, res) => {
     res.status(200).json(newCamera);
   } catch (error) {
     const schemaErrorMessage = getSchemaError(error);
-    res
-      .status(500)
-      .send({ message: schemaErrorMessage || "Something went wrong" });
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 
@@ -92,9 +82,7 @@ router.delete("/api/cameras/:id", async (req, res) => {
   } catch (error) {
     console.log(error);
     const schemaErrorMessage = getSchemaError(error);
-    res
-      .status(500)
-      .send({ message: schemaErrorMessage || "Something went wrong" });
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 
@@ -104,23 +92,16 @@ router.put("/api/cameras/:id", async (req, res) => {
     let cameraID = req.params.id;
 
     let camera = await Camera.findOne({ _id: cameraID });
-    if (!camera)
-      return res.status(404).json({ message: "Camera does not exist" });
+    if (!camera) return res.status(404).json({ message: "Camera does not exist" });
 
-    let updatedCamera = await Camera.findOneAndUpdate(
-      { _id: cameraID },
-      receivedCamera,
-      {
-        new: true,
-      }
-    );
+    let updatedCamera = await Camera.findOneAndUpdate({ _id: cameraID }, receivedCamera, {
+      new: true,
+    });
     res.status(200).json(updatedCamera);
   } catch (error) {
     console.log(error);
     const schemaErrorMessage = getSchemaError(error);
-    res
-      .status(500)
-      .send({ message: schemaErrorMessage || "Something went wrong" });
+    res.status(500).send({ message: schemaErrorMessage || "Something went wrong" });
   }
 });
 

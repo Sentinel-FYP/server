@@ -7,6 +7,7 @@ let modelSchema = mongoose.Schema({
   password: { type: String, default: "" },
   thumbnail: { type: String },
   active: { type: Boolean, default: true },
+  deleted: { type: Boolean, default: false },
   device: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "EdgeDevice",
