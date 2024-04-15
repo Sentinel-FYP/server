@@ -20,6 +20,7 @@ router.get("/api/notifications", async (req, res) => {
       .skip(skipCount)
       .limit(logsPerPage)
       .populate("fromDevice")
+      .populate("fromCamera", "-thumbnail")
       .sort({ createdAt: -1 });
 
     const today = new Date();
@@ -122,9 +123,14 @@ router.delete("/api/notifications/clear", async (req, res) => {
   }
 });
 
-async function postNotification(deviceID, title, message) {
+async function postNotification(deviceID, cameraID, title, message) {
   try {
-    const notification = await Notification.create({ fromDevice: deviceID, title, message });
+    const notification = await Notification.create({
+      fromDevice: deviceID,
+      fromCamera: cameraID,
+      title,
+      message,
+    });
     console.log("Notification Saved", notification);
   } catch (error) {
     const schemaErrorMessage = getSchemaError(error);

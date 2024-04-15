@@ -9,11 +9,10 @@ let modelSchema = mongoose.Schema(
     },
     title: { type: String, required: true },
     message: { type: String, required: true },
-    // fromCamera: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "Camera",
-    //   required: true,
-    // },
+    fromCamera: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Camera",
+    },
     createdAt: {
       type: Date,
       default: Date.now,
