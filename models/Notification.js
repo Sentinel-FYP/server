@@ -13,6 +13,11 @@ let modelSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Camera",
     },
+    type: {
+      type: String,
+      default: "Disconnection",
+      enum: ["Anomaly", "Disconnection"],
+    },
     createdAt: {
       type: Date,
       default: Date.now,

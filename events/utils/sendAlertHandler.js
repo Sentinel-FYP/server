@@ -11,7 +11,7 @@ module.exports = (io) => {
 
 async function sendAlertToUser(info) {
   try {
-    let { deviceID, cameraID, notificationTitle, notificationMessage } = info;
+    let { deviceID, cameraID, notificationTitle, notificationMessage, type } = info;
 
     if (!deviceID) {
       throw new Error("Device ID is required!");
@@ -25,7 +25,7 @@ async function sendAlertToUser(info) {
 
     const userId = existingDevice?.owner?._id;
 
-    storeNotification(existingDevice._id, cameraID, notificationTitle, notificationMessage);
+    storeNotification(existingDevice._id, cameraID, notificationTitle, notificationMessage, type);
     sendNotification(notificationMessage, notificationTitle, userId);
   } catch (error) {
     console.log("Notification sending Error", error.message);

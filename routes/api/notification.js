@@ -123,13 +123,14 @@ router.delete("/api/notifications/clear", async (req, res) => {
   }
 });
 
-async function postNotification(deviceID, cameraID, title, message) {
+async function postNotification(deviceID, cameraID, title, message, type) {
   try {
     const notification = await Notification.create({
       fromDevice: deviceID,
       fromCamera: cameraID,
       title,
       message,
+      type,
     });
     console.log("Notification Saved", notification);
   } catch (error) {
