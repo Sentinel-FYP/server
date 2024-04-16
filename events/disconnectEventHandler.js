@@ -14,7 +14,7 @@ module.exports = (device) => {
       if (!existingDevice) {
         console.log("Device with this Id does not exist");
       } else {
-        let disconnectTitle = "Edge Device Disconnected!";
+        let disconnectTitle = "Device Disconnected";
         let disconnectMsg = `Edge device ${existingDevice.deviceName} has been disconnected. Ensure it's connectivity to the internet and Reconnect using the mobile device.`;
 
         storeNotification(existingDevice._id, null, disconnectTitle, disconnectMsg);
